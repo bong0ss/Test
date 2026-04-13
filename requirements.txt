@@ -1,3 +1,4 @@
 dotenv
 Django
 whitenoise
+psycopg2-binary
