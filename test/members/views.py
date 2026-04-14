@@ -5,13 +5,7 @@ from django.shortcuts import redirect
 from django.template import loader
 
 from .models import Member, PcComp
-from .signals import custom_signal
-
-
-def send_data(request):
-    custom_signal.send(
-        sender=None, user=request.user, information=(request, request.GET, request.POST)
-    )
+from .utility import send_data
 
 
 def members(request):
