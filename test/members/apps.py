@@ -5,9 +5,9 @@ class MembersConfig(AppConfig):
     name = "members"
 
 
-class AccountsConfig(AppConfig):
+class LoggingConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "members"
+    name = "logging"
 
     def ready(self):
         import members.signals

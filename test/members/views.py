@@ -84,36 +84,35 @@ def customfunctions(request):
 
 
 def addition(request):
+    send_data(request)
     if request.user.is_authenticated:
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
             x = num1 + num2
-            send_data(request)
             return HttpResponse(
                 loader.get_template("addition.html").render({"x": x}, request)
             )
     else:
-        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
 def subtraction(request):
+    send_data(request)
     if request.user.is_authenticated:
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
             x = num1 - num2
-            send_data(request)
             return HttpResponse(
                 loader.get_template("subtraction.html").render({"x": x}, request)
             )
     else:
-        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
 def multiplication(request):
+    send_data(request)
     if request.user.is_authenticated and request.user.has_perm(
         "members.multiplication_access"
     ):
@@ -121,12 +120,10 @@ def multiplication(request):
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
             x = num1 * num2
-            send_data(request)
             return HttpResponse(
                 loader.get_template("multiplication.html").render({"x": x}, request)
             )
     else:
-        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
