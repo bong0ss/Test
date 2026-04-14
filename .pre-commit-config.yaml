@@ -7,6 +7,6 @@ repos:
         args: [--fix]
       # Uruchom linter (z opcją automatycznej naprawy)
       - id: ruff
-        args: [--select I, --fix]
+        args: [--select, I, --fix]
       # Uruchom formatter
       - id: ruff-format

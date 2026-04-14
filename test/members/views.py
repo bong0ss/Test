@@ -1,13 +1,21 @@
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
-from django.shortcuts import redirect
+from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.template import loader
-from .models import Member
-from .models import PcComp
+
+from .models import Member, PcComp
+from .signals import custom_signal
+
+
+def send_data(request):
+    custom_signal.send(
+        sender=None, user=request.user, information=(request, request.GET, request.POST)
+    )
 
 
 def members(request):
+    send_data(request)
     return HttpResponse(
         loader.get_template("members.html").render(
             {
@@ -19,6 +27,7 @@ def members(request):
 
 
 def details(request, id):
+    send_data(request)
     return HttpResponse(
         loader.get_template("details.html").render(
             {"mymember": Member.objects.get(id=id)}, request
@@ -27,10 +36,12 @@ def details(request, id):
 
 
 def index(request):
+    send_data(request)
     return HttpResponse(loader.get_template("index.html").render())
 
 
 def testing(request):
+    send_data(request)
     return HttpResponse(
         loader.get_template("template.html").render(
             {
@@ -41,6 +52,7 @@ def testing(request):
 
 
 def testsite(request):
+    send_data(request)
     return HttpResponse(
         loader.get_template("testsite.html").render(
             {"mymember": Member.objects.all().values()}, request
@@ -49,6 +61,7 @@ def testsite(request):
 
 
 def pccomps(request):
+    send_data(request)
     return HttpResponse(
         loader.get_template("pccomp.html").render(
             {"components": PcComp.objects.all().values()}, request
@@ -57,6 +70,7 @@ def pccomps(request):
 
 
 def partdetails(request, id):
+    send_data(request)
     return HttpResponse(
         loader.get_template("partdetails.html").render(
             {"component": PcComp.objects.get(id=id)}, request
@@ -65,6 +79,7 @@ def partdetails(request, id):
 
 
 def customfunctions(request):
+    send_data(request)
     return HttpResponse(loader.get_template("customfunctions.html").render())
 
 
@@ -72,12 +87,14 @@ def addition(request):
     if request.user.is_authenticated:
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
-        if type(num1) is int and type(num2) is int:
+        if isinstance(num1, int) and isinstance(num2, int):
             x = num1 + num2
+            send_data(request)
             return HttpResponse(
                 loader.get_template("addition.html").render({"x": x}, request)
             )
     else:
+        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
@@ -85,12 +102,14 @@ def subtraction(request):
     if request.user.is_authenticated:
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
-        if type(num1) is int and type(num2) is int:
+        if isinstance(num1, int) and isinstance(num2, int):
             x = num1 - num2
+            send_data(request)
             return HttpResponse(
                 loader.get_template("subtraction.html").render({"x": x}, request)
             )
     else:
+        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
@@ -100,12 +119,14 @@ def multiplication(request):
     ):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
-        if type(num1) is int and type(num2) is int:
+        if isinstance(num1, int) and isinstance(num2, int):
             x = num1 * num2
+            send_data(request)
             return HttpResponse(
                 loader.get_template("multiplication.html").render({"x": x}, request)
             )
     else:
+        send_data(request)
         return HttpResponse(loader.get_template("access_denied.html").render())
 
 
