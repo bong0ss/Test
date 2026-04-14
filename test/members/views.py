@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.template import loader
 
 from .models import Member, PcComp
+from .tasks import add, sub
 from .utility import send_data
 
 
@@ -83,7 +84,7 @@ def addition(request):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
-            x = num1 + num2
+            x = add(num1, num2)
             return HttpResponse(
                 loader.get_template("addition.html").render({"x": x}, request)
             )
@@ -97,7 +98,7 @@ def subtraction(request):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
-            x = num1 - num2
+            x = sub(num1, num2)
             return HttpResponse(
                 loader.get_template("subtraction.html").render({"x": x}, request)
             )
