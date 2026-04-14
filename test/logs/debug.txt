@@ -1,0 +1,12 @@
+Watching for file changes with StatReloader
+"GET /customfunctions/addition/ HTTP/1.1" 200 906
+"GET /customfunctions/ HTTP/1.1" 200 640
+"GET /customfunctions/subtraction/ HTTP/1.1" 200 917
+"GET /customfunctions/ HTTP/1.1" 200 640
+Watching for file changes with StatReloader
+"GET /customfunctions/addition/ HTTP/1.1" 200 906
+Watching for file changes with StatReloader
+C:\Users\Grzesiek\Downloads\Test\.venv\test\test\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\Grzesiek\Downloads\Test\.venv\test\test\settings.py changed, reloading.
+Watching for file changes with StatReloader
