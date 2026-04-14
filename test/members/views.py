@@ -88,7 +88,7 @@ def subtraction(request):
         if type(num1) is int and type(num2) is int:
             x = num1 - num2
             return HttpResponse(
-                loader.get_template("addition.html").render({"x": x}, request)
+                loader.get_template("subtraction.html").render({"x": x}, request)
             )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
@@ -103,7 +103,7 @@ def multiplication(request):
         if type(num1) is int and type(num2) is int:
             x = num1 * num2
             return HttpResponse(
-                loader.get_template("addition.html").render({"x": x}, request)
+                loader.get_template("multiplication.html").render({"x": x}, request)
             )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
