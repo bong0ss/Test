@@ -1,0 +1,17 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Main Site
+{% endblock %}
+
+{% block content %}
+    <h1>Main Site</h1>
+
+    <h3>Members</h3>
+
+    <p>Check out all our <a href="members/">Members</a></p>
+
+    <p>Check out our PC Components stock <a href="{% url 'pccomp' %}">Here</a></p>
+
+    <p><a href="{% url 'customfunctions' %}">Custom Functions</a></p>
+{% endblock %}

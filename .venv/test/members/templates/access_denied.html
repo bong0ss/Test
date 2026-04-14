@@ -1,0 +1,10 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Access Denied
+{% endblock %}
+
+{% block content %}
+    <h1>You don't seem to have access to that site!</h1>
+    <h3><a href="{% url 'customfunctions' %}">Return</a></h3>
+{% endblock %}

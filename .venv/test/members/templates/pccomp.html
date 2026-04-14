@@ -1,0 +1,25 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    PC Components
+{% endblock %}
+
+{% block content %}
+    <h1>Avaliable PC Components</h1>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Producer</th>
+            <th>Qunatity</th>
+            <th>Details</th>
+        </tr>
+        {% for x in components %}
+            <tr>
+                <td>{{ x.partname }}</td>
+                <td>{{ x.producer }}</td>
+                <td>{{ x.quantity }}</td>
+                <td><a href="partdetails/{{x.id}}">Check Details</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
