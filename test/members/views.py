@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.template import loader
 
 from .models import Member, PcComp
-from .tasks import add, sub
+from .tasks import add, mult, sub
 from .utility import send_data
 
 
@@ -84,9 +84,10 @@ def addition(request):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
-            x = add(num1, num2)
             return HttpResponse(
-                loader.get_template("addition.html").render({"x": x}, request)
+                loader.get_template("addition.html").render(
+                    {"x": add(num1, num2)}, request
+                )
             )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
@@ -98,9 +99,10 @@ def subtraction(request):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
-            x = sub(num1, num2)
             return HttpResponse(
-                loader.get_template("subtraction.html").render({"x": x}, request)
+                loader.get_template("subtraction.html").render(
+                    {"x": sub(num1, num2)}, request
+                )
             )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
@@ -114,9 +116,10 @@ def multiplication(request):
         num1 = int(request.POST.get("num1", 0))
         num2 = int(request.POST.get("num2", 0))
         if isinstance(num1, int) and isinstance(num2, int):
-            x = num1 * num2
             return HttpResponse(
-                loader.get_template("multiplication.html").render({"x": x}, request)
+                loader.get_template("multiplication.html").render(
+                    {"x": mult(num1, num2)}, request
+                )
             )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())

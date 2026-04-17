@@ -1,13 +1,16 @@
-from celery import Celery, shared_task
-
-app = Celery("tasks", broker="")
+from .celery import app
 
 
-@shared_task
+@app.task
 def add(x, y):
     return x + y
 
 
-@shared_task
+@app.task
 def sub(x, y):
     return x - y
+
+
+@app.task
+def mult(x, y):
+    return x * y

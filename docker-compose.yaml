@@ -1,0 +1,69 @@
+services:
+  django-app:
+    build: 
+      context: .
+      dockerfile: dockerfiles/app/Dockerfile
+      ports:
+        - 8000:8000
+      networks:
+        - app-network
+      depends_on:
+        - db
+      volumes:
+        - .:/app
+      develop:
+        watch:
+          - action: sync
+            path: .
+            target: /app
+            ignore:
+              - __pycache__/
+              - env/
+          - action: rebuild
+            path: requirements.txt
+  db:
+    image: postgres:18.3
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+  redis:
+    image: redis:7.4-alpine
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASS}
+    environment:
+      - REDIS_PASSWORD: ${REDIS_PASS}
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+    networks:
+      - app-network
+  celery:
+    build: 
+      context: .
+      dockerfile: dockerfiles/celery/Dockerfile
+    environment:
+      - DJANGO_SETTINGS_MODULE: members.settings
+    networks:
+      - app-network
+  flower:
+    build:
+      context: .
+      dockerfile: dockerfiles/flower/Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings
+    ports:
+      - 5555:5555
+    networks:
+      - app-network
+networks:
+  app-network:
+volumes:
+  pg-data:
+  redis:

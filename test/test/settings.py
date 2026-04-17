@@ -79,8 +79,6 @@ WSGI_APPLICATION = "test.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-POSPOSTGRES_USER = os.getenv("POSPOSTGRES_USER")
-POSPOSTGRES_PASS = os.getenv("POSPOSTGRES_PASS")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -170,3 +168,7 @@ LOGGING = {
         },
     },
 }
+
+
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis//localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis//localhost:6379/0")
