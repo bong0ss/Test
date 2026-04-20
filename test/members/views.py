@@ -1,7 +1,9 @@
+from celery import current_app
+from celery.result import AsyncResult
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.template import loader
 
 from .models import Member, PcComp
@@ -126,19 +128,27 @@ def multiplication(request):
 
 
 def time_function(request):
-    send_data(request)
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            time_left = int(request.POST.get("time_left", 1))
-            if isinstance(time_left, int):
-                task = timer.delay(time_left)  # noqa: F841
-                return HttpResponse(
-                    loader.get_template("timer.html").render(
-                        {"status": "Started"}, request
-                    )
-                )
+    if request.user.is_authenticated:
+        task_id = request.session.get("current_task_id")
+        if task_id:
+            if AsyncResult(task_id).ready():
+                del request.session["current_task_id"]
+                task_id = None
+        if request.method == "POST":
+            if request.POST.get("action") == "delete":
+                if task_id:
+                    current_app.control.revoke(task_id, terminate=True, signal="KILL")
+                    task_id = None
+                return redirect("time_function")
+            else:
+                if not task_id:
+                    task = timer.delay(int(request.POST.get("time_left", 1)))
+                    task_id = task.id
+                    request.session["current_task_id"] = task_id
+                    return redirect("time_function")
+        return render(request, "timer.html", {"task_id": task_id or 0})
     else:
-        return HttpResponse(loader.get_template("access_denied.html").render())
+        return render(request, "access_denied.html")
 
 
 def login_form(request):

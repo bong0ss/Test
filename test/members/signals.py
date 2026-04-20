@@ -9,6 +9,7 @@ from django.dispatch import Signal, receiver
 
 logger = logging.getLogger(__name__)
 custom_signal = Signal()
+custom_data_signal = Signal()
 
 
 @receiver(user_logged_in)
@@ -33,3 +34,9 @@ def log_req_finished(sender, **kwargs):
     user = kwargs.get("user")
     information = kwargs.get("information")
     logger.info(f"User {user} | Action: {information}")
+
+
+@receiver(custom_data_signal)
+def log_custom_data(sender, **kwargs):
+    data = kwargs.get("information")
+    logger.info(data)

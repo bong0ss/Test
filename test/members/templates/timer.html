@@ -1,16 +1,29 @@
 {% extends 'master.html' %}
 
+{% load static %}
+
 {% block title %}
     Timer Site
 {% endblock %}
 
 {% block content %}
     <h1>Timer</h1>
-    <form action="{% url 'time_function' %}" method="post">
+    <form action="{% url 'time_function' %}" method="POST">
         {% csrf_token %}
-        <input type="number" name="time_left" value="1" min="1" required><br>
-        <button type="submit">Start</button>
+        <input type="number" name="time_left" value="1" min="1" required><br><br>
+        <button type="submit">Start</button>  <button type="submit" name="action" value="delete">Stop</button><br><br>
     </form>
-    <p>Status: {{ status }}</p>
+    <div id="progress-bar-trigger">
+        <div id="progress-bar" style="background-color: blue; width: 0%; height: 20px;"></div>
+        <div id="progress-bar-message">Czekam...</div>
+    </div>
+    <p>
+        <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+        <script>
+        var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+        CeleryProgressBar.initProgressBar(progressUrl);
+        </script>
+    </p>
+    
     <p><a href="{% url 'customfunctions' %}">Go Back </a></p>
 {% endblock %}

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "members.apps.LoggingConfig",
     "members",
+    "celery_progress",
 ]
 
 MIDDLEWARE = [
@@ -145,7 +146,7 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "file_logging",
-            "filename": f"{LOGS_DIR}/debug_{time.strftime('%Y%m%d%H%M')}.log",
+            "filename": f"{LOGS_DIR}/debug_{time.strftime('%Y%m%d%H')}.log",
             "when": "midnight",
             "interval": 1,
             "backupCount": 5,

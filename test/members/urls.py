@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from . import views
 
@@ -18,4 +18,5 @@ urlpatterns = [
     path("login_form/", views.login_form, name="login_form"),
     path("logoutsite/", views.logoutsite, name="logoutsite"),
     path("customfunctions/time_function/", views.time_function, name="time_function"),
+    path("celery-progress/", include("celery_progress.urls")),
 ]
