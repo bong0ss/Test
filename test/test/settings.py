@@ -128,9 +128,11 @@ STATIC_URL = "static/"
 
 STATICFILES_DIR = [BASE_DIR / "staticFiles"]
 
-# Ensure logs directory exists
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+current_time = time.strftime("%Y%m%d") + str(int(time.strftime("%H")) + 2)
+logfile_name = f"debug_{current_time}.log"
 
 LOGGING = {
     "version": 1,
@@ -146,7 +148,7 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "file_logging",
-            "filename": f"{LOGS_DIR}/debug_{time.strftime('%Y%m%d%H')}.log",
+            "filename": os.path.join(LOG_DIR, logfile_name),
             "when": "midnight",
             "interval": 1,
             "backupCount": 5,

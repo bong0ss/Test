@@ -12,6 +12,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+      - ./logs:/app/logs
     command: /bin/sh -c "python /app/test/manage.py migrate && gunicorn --chdir /app/test --bind 0.0.0.0:8000 --workers 8 --reload test.wsgi:application"
     develop:
       watch:
