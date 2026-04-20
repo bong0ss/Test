@@ -6,3 +6,6 @@ db.sqlite3
 .ruff_cache
 .ruff_cache/
 Dockerfile*
+linux-key
+__pycache__/
+.git/

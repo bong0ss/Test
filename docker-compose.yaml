@@ -2,25 +2,27 @@ services:
   django-app:
     build: 
       context: .
-      dockerfile: dockerfiles/app/Dockerfile
-      ports:
-        - 8000:8000
-      networks:
-        - app-network
-      depends_on:
-        - db
-      volumes:
-        - .:/app
-      develop:
-        watch:
-          - action: sync
-            path: .
-            target: /app
-            ignore:
-              - __pycache__/
-              - env/
-          - action: rebuild
-            path: requirements.txt
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: /bin/sh -c "python /app/test/manage.py migrate && gunicorn --chdir /app/test --bind 0.0.0.0:8000 --workers 8 --reload test.wsgi:application"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - __pycache__/
+            - env/
+        - action: rebuild
+          path: requirements.txt
   db:
     image: postgres:18.3
     ports:
@@ -30,14 +32,19 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - pg-data:/var/lib/postgresql
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   redis:
     image: redis:7.4-alpine
     command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASS}
     environment:
-      - REDIS_PASSWORD: ${REDIS_PASS}
+      - REDIS_PASSWORD=${REDIS_PASS}
     ports:
       - 6379:6379
     volumes:
@@ -49,7 +56,16 @@ services:
       context: .
       dockerfile: dockerfiles/celery/Dockerfile
     environment:
-      - DJANGO_SETTINGS_MODULE: members.settings
+      - DJANGO_SETTINGS_MODULE=test.settings
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=${REDIS_PASS}
+    depends_on:
+      - django-app
+      - db
+      - redis
+    volumes:
+      - .:/app
     networks:
       - app-network
   flower:
@@ -57,9 +73,16 @@ services:
       context: .
       dockerfile: dockerfiles/flower/Dockerfile
     environment:
-      DJANGO_SETTINGS_MODULE: core.settings
+      DJANGO_SETTINGS_MODULE: test.settings
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASS: ${REDIS_PASS}
+    depends_on:
+      - celery
     ports:
       - 5555:5555
+    volumes:
+      - .:/app
     networks:
       - app-network
 networks:

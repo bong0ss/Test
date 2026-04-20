@@ -82,10 +82,10 @@ WSGI_APPLICATION = "test.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
+        "NAME": os.getenv("POSTGRES_NAME"),
         "USER": os.getenv("POSTGRES_USER"),
         "PASSWORD": os.getenv("POSTGRES_PASS"),
-        "HOST": "127.0.0.1",
+        "HOST": "db",
         "PORT": "5432",
     }
 }
@@ -105,13 +105,9 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NA# https://docs.djangoproject.com/en/6.0/howto/local-i18n/",
     },
 ]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
 
@@ -131,6 +127,10 @@ STATIC_URL = "static/"
 
 STATICFILES_DIR = [BASE_DIR / "staticFiles"]
 
+# Ensure logs directory exists
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -145,7 +145,7 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "file_logging",
-            "filename": f"logs/debug_{time.strftime('%Y%m%d%H%M')}.log",
+            "filename": f"{LOGS_DIR}/debug_{time.strftime('%Y%m%d%H%M')}.log",
             "when": "midnight",
             "interval": 1,
             "backupCount": 5,

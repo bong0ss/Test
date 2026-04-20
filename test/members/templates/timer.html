@@ -1,0 +1,16 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Timer Site
+{% endblock %}
+
+{% block content %}
+    <h1>Timer</h1>
+    <form action="{% url 'time_function' %}" method="post">
+        {% csrf_token %}
+        <input type="number" name="time_left" value="1" min="1" required><br>
+        <button type="submit">Start</button>
+    </form>
+    <p>Status: {{ status }}</p>
+    <p><a href="{% url 'customfunctions' %}">Go Back </a></p>
+{% endblock %}

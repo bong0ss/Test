@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["gunicorn", "test.wsgi:application"]
+CMD ["gunicorn", "--chdir", "/app/test", "test.wsgi:application"]

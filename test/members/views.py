@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.template import loader
 
 from .models import Member, PcComp
-from .tasks import add, mult, sub
+from .tasks import add, mult, sub, timer
 from .utility import send_data
 
 
@@ -86,7 +86,7 @@ def addition(request):
         if isinstance(num1, int) and isinstance(num2, int):
             return HttpResponse(
                 loader.get_template("addition.html").render(
-                    {"x": add(num1, num2)}, request
+                    {"x": add.delay(num1, num2).get}, request
                 )
             )
     else:
@@ -101,7 +101,7 @@ def subtraction(request):
         if isinstance(num1, int) and isinstance(num2, int):
             return HttpResponse(
                 loader.get_template("subtraction.html").render(
-                    {"x": sub(num1, num2)}, request
+                    {"x": sub.delay(num1, num2).get}, request
                 )
             )
     else:
@@ -118,9 +118,25 @@ def multiplication(request):
         if isinstance(num1, int) and isinstance(num2, int):
             return HttpResponse(
                 loader.get_template("multiplication.html").render(
-                    {"x": mult(num1, num2)}, request
+                    {"x": mult.delay(num1, num2).get}, request
                 )
             )
+    else:
+        return HttpResponse(loader.get_template("access_denied.html").render())
+
+
+def time_function(request):
+    send_data(request)
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            time_left = int(request.POST.get("time_left", 1))
+            if isinstance(time_left, int):
+                task = timer.delay(time_left)  # noqa: F841
+                return HttpResponse(
+                    loader.get_template("timer.html").render(
+                        {"status": "Started"}, request
+                    )
+                )
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
 
