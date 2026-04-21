@@ -1,3 +1,7 @@
+import ast
+import time
+
+import requests
 from celery import current_app
 from celery.result import AsyncResult
 from django.contrib.auth import login, logout
@@ -83,14 +87,18 @@ def customfunctions(request):
 def addition(request):
     send_data(request)
     if request.user.is_authenticated:
-        num1 = int(request.POST.get("num1", 0))
-        num2 = int(request.POST.get("num2", 0))
-        if isinstance(num1, int) and isinstance(num2, int):
-            return HttpResponse(
-                loader.get_template("addition.html").render(
-                    {"x": add.delay(num1, num2).get}, request
+        if request.method == "POST":
+            num1 = int(request.POST.get("num1", 0))
+            num2 = int(request.POST.get("num2", 0))
+            if isinstance(num1, int) and isinstance(num2, int):
+                return HttpResponse(
+                    loader.get_template("addition.html").render(
+                        {"x": add.delay(num1, num2, user_id=request.user.id).get},
+                        request,
+                    )
                 )
-            )
+        else:
+            return render(request, "addition.html")
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
 
@@ -98,14 +106,18 @@ def addition(request):
 def subtraction(request):
     send_data(request)
     if request.user.is_authenticated:
-        num1 = int(request.POST.get("num1", 0))
-        num2 = int(request.POST.get("num2", 0))
-        if isinstance(num1, int) and isinstance(num2, int):
-            return HttpResponse(
-                loader.get_template("subtraction.html").render(
-                    {"x": sub.delay(num1, num2).get}, request
+        if request.method == "POST":
+            num1 = int(request.POST.get("num1", 0))
+            num2 = int(request.POST.get("num2", 0))
+            if isinstance(num1, int) and isinstance(num2, int):
+                return HttpResponse(
+                    loader.get_template("subtraction.html").render(
+                        {"x": sub.delay(num1, num2, user_id=request.user.id).get},
+                        request,
+                    )
                 )
-            )
+        else:
+            return render(request, "subtraction.html")
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
 
@@ -115,14 +127,17 @@ def multiplication(request):
     if request.user.is_authenticated and request.user.has_perm(
         "members.multiplication_access"
     ):
-        num1 = int(request.POST.get("num1", 0))
-        num2 = int(request.POST.get("num2", 0))
-        if isinstance(num1, int) and isinstance(num2, int):
-            return HttpResponse(
-                loader.get_template("multiplication.html").render(
-                    {"x": mult.delay(num1, num2).get}, request
+        if request.method == "POST":
+            num1 = int(request.POST.get("num1", 0))
+            num2 = int(request.POST.get("num2", 0))
+            if isinstance(num1, int) and isinstance(num2, int):
+                return HttpResponse(
+                    loader.get_template("multiplication.html").render(
+                        {"x": mult.delay(num1, num2, user_id=request.user.id).get},
+                        request,
+                    )
                 )
-            )
+        return render(request, "multiplication.html")
     else:
         return HttpResponse(loader.get_template("access_denied.html").render())
 
@@ -142,7 +157,9 @@ def time_function(request):
                 return redirect("time_function")
             else:
                 if not task_id:
-                    task = timer.delay(int(request.POST.get("time_left", 1)))
+                    task = timer.delay(
+                        int(request.POST.get("time_left", 1)), user_id=request.user.id
+                    )
                     task_id = task.id
                     request.session["current_task_id"] = task_id
                     return redirect("time_function")
@@ -177,3 +194,24 @@ def logoutsite(request):
         return redirect("login_form")
     else:
         return redirect("index")
+
+
+def output_site(request):
+    if request.user.is_authenticated:
+        user_tasks = []
+        start_time = 0
+        for task_id, task_data in (
+            requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
+        ):
+            kwargs = task_data.get("kwargs")
+            if isinstance(kwargs, str):
+                kwargs = ast.literal_eval(kwargs.replace("None", "None"))
+            if str(kwargs.get("user_id")) == str(request.user.id):
+                task_data["uuid"] = task_id
+                start_time = time.ctime(task_data["started"])
+                user_tasks.append(task_data)
+        return render(
+            request, "output_site.html", {"tasks": user_tasks, "start_time": start_time}
+        )
+    else:
+        return render(request, "access_denied.html")

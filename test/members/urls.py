@@ -19,4 +19,5 @@ urlpatterns = [
     path("logoutsite/", views.logoutsite, name="logoutsite"),
     path("customfunctions/time_function/", views.time_function, name="time_function"),
     path("celery-progress/", include("celery_progress.urls")),
+    path("output-site/", views.output_site, name="output_site"),
 ]

@@ -1,0 +1,33 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Output Site
+{% endblock %}
+
+{% block content %}
+    <h1>Output's</h1>
+    <table id="output_tb">
+        <tr>
+            <th>Name</th>
+            <th>UUID</th>
+            <th>State</th>
+            <th>Args</th>
+            <th>Result</th>
+            <th>Started</th>
+        </tr>
+        {% for task in tasks %}
+            <tr>
+                <td>{{ task.name }}</td>
+                <td>{{ task.uuid }}</td>
+                <td>{{ task.state }}</td>
+                <td>{{ task.args }}</td>
+                <td>{{ task.result }}</td>
+                <td>{{ start_time }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">Brak aktywnych zadań.</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -131,8 +131,7 @@ STATICFILES_DIR = [BASE_DIR / "staticFiles"]
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
-current_time = time.strftime("%Y%m%d") + str(int(time.strftime("%H")) + 2)
-logfile_name = f"debug_{current_time}.log"
+logfile_name = f"debug_{time.strftime("%Y%m%d%H")}.log"
 
 LOGGING = {
     "version": 1,

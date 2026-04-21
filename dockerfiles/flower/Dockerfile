@@ -13,4 +13,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "cd /app/test && celery -A members flower"]
+CMD ["sh", "-c", "cd /app/test && celery -A members flower --port=5555 --address=0.0.0.0 --unauthenticated_api"]

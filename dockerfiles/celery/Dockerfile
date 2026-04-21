@@ -13,4 +13,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "cd /app/test && celery -A members worker -l INFO"]
+CMD ["sh", "-c", "cd /app/test && celery -A members worker -l INFO -E"]

@@ -10,22 +10,22 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def add(x, y):
+def add(x, y, user_id=None):
     return x + y
 
 
 @shared_task
-def sub(x, y):
+def sub(x, y, user_id=None):
     return x - y
 
 
 @shared_task
-def mult(x, y):
+def mult(x, y, user_id=None):
     return x * y
 
 
 @shared_task(name="members.tasks.timer", bind=True)
-def timer(self, time_left):
+def timer(self, time_left, user_id=None):
     progress = ProgressRecorder(self)
     custom_data(
         data=f"Action started at {time.ctime()}, await {time_left} seconds! Predicted to finish at {time.ctime(time.time() + time_left)}"
