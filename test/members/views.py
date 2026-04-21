@@ -203,10 +203,7 @@ def output_site(request):
         for task_id, task_data in (
             requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
         ):
-            kwargs = task_data.get("kwargs")
-            if isinstance(kwargs, str):
-                kwargs = ast.literal_eval(kwargs.replace("None", "None"))
-            if str(kwargs.get("user_id")) == str(request.user.id):
+            if ast.literal_eval(task_data["kwargs"])["user_id"] == request.user.id:
                 task_data["uuid"] = task_id
                 start_time = time.ctime(task_data["started"])
                 user_tasks.append(task_data)
@@ -219,23 +216,16 @@ def output_site(request):
 
 def task_details(request, uuid):
     if request.user.is_authenticated:
-        for task_id, task_data in (
-            requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
-        ):
-            kwargs = task_data.get("kwargs")
-            if isinstance(kwargs, str):
-                kwargs = ast.literal_eval(kwargs.replace("None", "None"))
-            if str(kwargs.get("user_id")) == str(request.user.id):
-                task_data["uuid"] = task_id
-                if task_id == uuid:
-                    return render(
-                        request,
-                        "task_details.html",
-                        {"task": task_data},
-                    )
-                else:
-                    return redirect("output_site")
-            else:
-                return render(request, "access_denied.html")
+        item = requests.get(
+            f"http://flower:5555/api/task/info/{uuid}", timeout=2
+        ).json()
+        if ast.literal_eval(item["kwargs"])["user_id"] == request.user.id:
+            return render(
+                request,
+                "task_details.html",
+                {"task": item},
+            )
+        else:
+            return render(request, "access_denied.html")
     else:
         return render(request, "access_denied.html")
