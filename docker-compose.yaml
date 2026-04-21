@@ -56,6 +56,10 @@ services:
     networks:
       - app-network
   celery:
+    user: root
+    command: >
+              sh -c "chown -R 1000:1000 /app/test/logs && 
+              su-exec appuser celery -A members worker -l INFO -E"
     container_name: celery
     build: 
       context: .
