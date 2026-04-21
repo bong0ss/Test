@@ -143,6 +143,7 @@ def multiplication(request):
 
 
 def time_function(request):
+    send_data(request)
     if request.user.is_authenticated:
         task_id = request.session.get("current_task_id")
         if task_id:
@@ -197,6 +198,7 @@ def logoutsite(request):
 
 
 def output_site(request):
+    send_data(request)
     if request.user.is_authenticated:
         user_tasks = []
         start_time = 0
@@ -215,6 +217,7 @@ def output_site(request):
 
 
 def task_details(request, uuid):
+    send_data(request)
     if request.user.is_authenticated:
         item = requests.get(
             f"http://flower:5555/api/task/info/{uuid}", timeout=2
