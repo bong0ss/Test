@@ -59,8 +59,13 @@ main table
     border: 1px solid black;
     border-collapse: collapse;
 }
-#output_tb td, #output_tb th
+#output_tb td
 {
     border: 1px solid black;
+    padding: 6px;
+}
+#output_tb th
+{
+    border: 3px solid black;
     padding: 8px;
 }

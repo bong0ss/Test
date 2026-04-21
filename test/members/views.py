@@ -215,3 +215,27 @@ def output_site(request):
         )
     else:
         return render(request, "access_denied.html")
+
+
+def task_details(request, uuid):
+    if request.user.is_authenticated:
+        for task_id, task_data in (
+            requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
+        ):
+            kwargs = task_data.get("kwargs")
+            if isinstance(kwargs, str):
+                kwargs = ast.literal_eval(kwargs.replace("None", "None"))
+            if str(kwargs.get("user_id")) == str(request.user.id):
+                task_data["uuid"] = task_id
+                if task_id == uuid:
+                    return render(
+                        request,
+                        "task_details.html",
+                        {"task": task_data},
+                    )
+                else:
+                    return redirect("output_site")
+            else:
+                return render(request, "access_denied.html")
+    else:
+        return render(request, "access_denied.html")

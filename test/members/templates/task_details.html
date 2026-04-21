@@ -1,0 +1,43 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Task Details
+{% endblock %}
+
+{% block content %}
+    <h3>Task details</h3>
+    <ul style="text-align: left; width: 20%; margin-left: auto; margin-right: auto;">
+        <li>UUID: {{ task.uuid }}</li>
+        <li>Name: {{ task.name }}</li>
+        <li>State: {{ task.state }}</li>
+        <li>Received: {{ task.received }}</li>
+        <li>Sent: {{ task.sent }}</li>
+        <li>Started: {{ task.started }}</li>
+        <li>Rejected: {{ task.rejected }}</li>
+        <li>Succeeded: {{ task.succeeded }}</li>
+        <li>Failed: {{ task.failed }}</li>
+        <li>Retried: {{ task.retried }}</li>
+        <li>Revoked: {{ task.revoked }}</li>
+        <li>Args: {{ task.args }}</li>
+        <li>Kwargs: {{ task.kwargs }}</li>
+        <li>Eta: {{ task.eta }}</li>
+        <li>Expires: {{ task.expires }}</li>
+        <li>Retries: {{ task.retires }}</li>
+        <li>Result: {{ task.result }}</li>
+        <li>Exception: {{ task.exception }}</li>
+        <li>Timestamp: {{ task.timestamp }}</li>
+        <li>Runtime: {{ task.runtime }}</li>
+        <li>Traceback: {{ task.traceback }}</li>
+        <li>Exchange: {{ task.exchange }}</li>
+        <li>Routing Key: {{ task.routing_key }}</li>
+        <li>Clock: {{ task.clock }}</li>
+        <li>Client: {{ task.client }}</li>
+        <li>Root: {{ task.root }}</li>
+        <li>Root Id: {{ task.root_id }}</li>
+        <li>Parent: {{ task.parent }}</li>
+        <li>Parent Id: {{ task.parent_id }}</li>
+        <li>Children: {{ task.children }}</li>
+        <li>Worker: {{ task.worker }}</li>
+    </ul>
+    <p><a href="{% url 'output_site' %}">Return</a></p>
+{% endblock %}

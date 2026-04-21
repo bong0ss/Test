@@ -14,6 +14,7 @@
             <th>Args</th>
             <th>Result</th>
             <th>Started</th>
+            <th>Details</th>
         </tr>
         {% for task in tasks %}
             <tr>
@@ -23,10 +24,11 @@
                 <td>{{ task.args }}</td>
                 <td>{{ task.result }}</td>
                 <td>{{ start_time }}</td>
+                <td><a href="{% url 'task_details' task.uuid %}">Check Details</a></td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="6">Brak aktywnych zadań.</td>
+                <td colspan="7">Brak aktywnych zadań.</td>
             </tr>
         {% endfor %}
     </table>

@@ -20,4 +20,7 @@ urlpatterns = [
     path("customfunctions/time_function/", views.time_function, name="time_function"),
     path("celery-progress/", include("celery_progress.urls")),
     path("output-site/", views.output_site, name="output_site"),
+    path(
+        "output-site/task-details/<str:uuid>", views.task_details, name="task_details"
+    ),
 ]
