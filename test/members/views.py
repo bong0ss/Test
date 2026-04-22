@@ -6,6 +6,7 @@ from celery import current_app
 from celery.result import AsyncResult
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
@@ -145,26 +146,26 @@ def multiplication(request):
 def time_function(request):
     send_data(request)
     if request.user.is_authenticated:
-        task_id = request.session.get("current_task_id")
-        if task_id:
-            if AsyncResult(task_id).ready():
-                del request.session["current_task_id"]
-                task_id = None
+        task_id = cache.get(f"user_task_{request.user.id}")
         if request.method == "POST":
-            if request.POST.get("action") == "delete":
-                if task_id:
-                    current_app.control.revoke(task_id, terminate=True, signal="KILL")
-                    task_id = None
+            action = request.POST.get("action")
+            if action == "delete" and task_id:
+                current_app.control.revoke(task_id, terminate=True, signal="KILL")
+                cache.delete(f"user_task_{request.user.id}")
+                task_id = None
                 return redirect("time_function")
-            else:
-                if not task_id:
-                    task = timer.delay(
-                        int(request.POST.get("time_left", 1)), user_id=request.user.id
-                    )
-                    task_id = task.id
-                    request.session["current_task_id"] = task_id
-                    return redirect("time_function")
-        return render(request, "timer.html", {"task_id": task_id or 0})
+            elif action != "delete" and not task_id:
+                task = timer.delay(
+                    int(request.POST.get("time_left", 1)), user_id=request.user.id
+                )
+                task_id = task.id
+                cache.set(f"user_task_{request.user.id}", task_id, timeout=3600)
+                return redirect("time_function")
+        if task_id:
+            if AsyncResult(task_id) in ["SUCCESS", "FAILURE", "REVOKED"]:
+                cache.delete(f"user_task_{request.user.id}")
+                task_id = None
+        return render(request, "timer.html", {"task_id": task_id})
     else:
         return render(request, "access_denied.html")
 
@@ -201,7 +202,6 @@ def output_site(request):
     send_data(request)
     if request.user.is_authenticated:
         user_tasks = []
-        start_time = 0
         for task_id, task_data in (
             requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
         ):
