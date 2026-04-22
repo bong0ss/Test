@@ -7,11 +7,12 @@ from celery.result import AsyncResult
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
+from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
-from .tasks import add, mult, sub, timer
+from .tasks import add, alarms_tp_uni, mult, sub, timer
 from .utility import send_data
 
 
@@ -145,7 +146,8 @@ def output_site(request):
         for task_id, task_data in (
             requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
         ):
-            if ast.literal_eval(task_data["kwargs"])["user_id"] == request.user.id:
+            raw_kwargs = task_data["kwargs"].replace("\n", "").replace("\r", "")
+            if ast.literal_eval(raw_kwargs)["user_id"] == request.user.id:
                 task_data["uuid"] = task_id
                 task_data["started"] = time.ctime(task_data["started"])
                 user_tasks.append(task_data)
@@ -160,7 +162,8 @@ def task_details(request, uuid):
         item = requests.get(
             f"http://flower:5555/api/task/info/{uuid}", timeout=2
         ).json()
-        if ast.literal_eval(item["kwargs"])["user_id"] == request.user.id:
+        raw_kwargs = item["kwargs"].replace("\n", "").replace("\r", "")
+        if ast.literal_eval(raw_kwargs)["user_id"] == request.user.id:
             return render(
                 request,
                 "task_details.html",
@@ -168,5 +171,32 @@ def task_details(request, uuid):
             )
         else:
             return render(request, "access_denied.html")
+    else:
+        return render(request, "access_denied.html")
+
+
+def alarms_uni(request):
+    send_data(request)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            input_xlsx = request.FILES.get("input_xlsx")
+            output_xlsx = request.POST.get("output_xlsx")
+            input_txt = request.FILES.get("input_txt")
+            if input_xlsx and output_xlsx and input_txt:
+                alarms_tp_uni.delay(
+                    input_xlsx=default_storage.path(
+                        default_storage.save(f"{input_xlsx.name}", input_xlsx)
+                    ),
+                    output_xlsx=output_xlsx,
+                    input_txt=",\n".join(
+                        f'"{txt}"'
+                        for txt in input_txt.read().decode("utf-8").splitlines()
+                    ),
+                    user_id=request.user.id,
+                )
+                return redirect("alarms_uni")
+            else:
+                return redirect("alarms_uni")
+        return render(request, "alarms_uni.html")
     else:
         return render(request, "access_denied.html")

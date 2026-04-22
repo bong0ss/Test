@@ -18,4 +18,5 @@ urlpatterns = [
     path(
         "output-site/task-details/<str:uuid>", views.task_details, name="task_details"
     ),
+    path("alarms_uni/", views.alarms_uni, name="alarms_uni"),
 ]

@@ -1,0 +1,17 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Alarms TP to unified
+{% endblock %}
+
+{% block content %}
+<h1>Alarms TP to unified</h1>
+<form action="{% url 'alarms_uni' %}" method="POST" enctype="multipart/form-data" style="width: 15%; text-align: left; margin-left: auto; margin-right: auto;">
+    {% csrf_token %}
+    <p>Input XLSX: <input type="file" name="input_xlsx" accept=".xlsx" required></p>
+    <p>Output XLSX name: <input type="text" name="output_xlsx" required></p>
+    <p>Tags to fix: <input type="file" name="input_txt" accept=".txt" required></p>
+    <p><center><button type="submit">Submit</button></center></p>
+</form>
+
+{% endblock %}
