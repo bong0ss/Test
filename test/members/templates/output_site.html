@@ -23,7 +23,7 @@
                 <td>{{ task.state }}</td>
                 <td>{{ task.args }}</td>
                 <td>{{ task.result }}</td>
-                <td>{{ start_time }}</td>
+                <td>{{ task.started }}</td>
                 <td><a href="{% url 'task_details' task.uuid %}">Check Details</a></td>
             </tr>
         {% empty %}

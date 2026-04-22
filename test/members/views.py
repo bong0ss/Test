@@ -146,12 +146,12 @@ def multiplication(request):
 def time_function(request):
     send_data(request)
     if request.user.is_authenticated:
-        task_id = cache.get(f"user_task_{request.user.id}")
+        task_id = cache.get(f"user_task_timer_{request.user.id}")
         if request.method == "POST":
             action = request.POST.get("action")
             if action == "delete" and task_id:
                 current_app.control.revoke(task_id, terminate=True, signal="KILL")
-                cache.delete(f"user_task_{request.user.id}")
+                cache.delete(f"user_task_timer_{request.user.id}")
                 task_id = None
                 return redirect("time_function")
             elif action != "delete" and not task_id:
@@ -159,11 +159,11 @@ def time_function(request):
                     int(request.POST.get("time_left", 1)), user_id=request.user.id
                 )
                 task_id = task.id
-                cache.set(f"user_task_{request.user.id}", task_id, timeout=3600)
+                cache.set(f"user_task_timer_{request.user.id}", task_id, timeout=21600)
                 return redirect("time_function")
         if task_id:
-            if AsyncResult(task_id) in ["SUCCESS", "FAILURE", "REVOKED"]:
-                cache.delete(f"user_task_{request.user.id}")
+            if AsyncResult(task_id).ready():
+                cache.delete(f"user_task_timer_{request.user.id}")
                 task_id = None
         return render(request, "timer.html", {"task_id": task_id})
     else:
@@ -207,11 +207,9 @@ def output_site(request):
         ):
             if ast.literal_eval(task_data["kwargs"])["user_id"] == request.user.id:
                 task_data["uuid"] = task_id
-                start_time = time.ctime(task_data["started"])
+                task_data["started"] = time.ctime(task_data["started"])
                 user_tasks.append(task_data)
-        return render(
-            request, "output_site.html", {"tasks": user_tasks, "start_time": start_time}
-        )
+        return render(request, "output_site.html", {"tasks": user_tasks})
     else:
         return render(request, "access_denied.html")
 
