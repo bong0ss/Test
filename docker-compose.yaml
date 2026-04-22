@@ -13,7 +13,6 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-      - ./logs:/app/logs
     command: /bin/sh -c "python /app/test/manage.py migrate && gunicorn --chdir /app/test --bind 0.0.0.0:8000 --workers 4 --reload test.wsgi:application"
     develop:
       watch:
@@ -58,7 +57,7 @@ services:
   celery:
     user: root
     command: >
-              sh -c "chown -R 1000:1000 /app/test/logs && 
+              sh -c "mkdir /app/test/logs && chown -R 1000:1000 /app/test/logs && 
               su-exec appuser celery -A members worker -l INFO -E"
     container_name: celery
     build: 
