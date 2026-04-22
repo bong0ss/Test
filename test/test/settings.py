@@ -112,9 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
-    {
-        "NA# https://docs.djangoproject.com/en/6.0/howto/local-i18n/",
-    },
 ]
 
 LANGUAGE_CODE = "en-us"

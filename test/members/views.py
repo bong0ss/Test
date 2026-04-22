@@ -11,73 +11,13 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
-from .models import Member, PcComp
 from .tasks import add, mult, sub, timer
 from .utility import send_data
-
-
-def members(request):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("members.html").render(
-            {
-                "mymembers": Member.objects.all().values(),
-            },
-            request,
-        )
-    )
-
-
-def details(request, id):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("details.html").render(
-            {"mymember": Member.objects.get(id=id)}, request
-        )
-    )
 
 
 def index(request):
     send_data(request)
     return HttpResponse(loader.get_template("index.html").render())
-
-
-def testing(request):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("template.html").render(
-            {
-                "mymembers": Member.objects.all().values(),
-            }
-        )
-    )
-
-
-def testsite(request):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("testsite.html").render(
-            {"mymember": Member.objects.all().values()}, request
-        )
-    )
-
-
-def pccomps(request):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("pccomp.html").render(
-            {"components": PcComp.objects.all().values()}, request
-        )
-    )
-
-
-def partdetails(request, id):
-    send_data(request)
-    return HttpResponse(
-        loader.get_template("partdetails.html").render(
-            {"component": PcComp.objects.get(id=id)}, request
-        )
-    )
 
 
 def customfunctions(request):

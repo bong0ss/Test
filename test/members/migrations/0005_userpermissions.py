@@ -5,26 +5,21 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
-    dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('members', '0004_pccomp_price'),
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='UserPermissions',
-            fields=[
-            ],
+            name="UserPermissions",
+            fields=[],
             options={
-                'permissions': [('multiplication_access', 'Can access multiplication')],
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "permissions": [("multiplication_access", "Can access multiplication")],
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('auth.user',),
+            bases=("auth.user",),
             managers=[
-                ('objects', django.contrib.auth.models.UserManager()),
+                ("objects", django.contrib.auth.models.UserManager()),
             ],
         ),
     ]
