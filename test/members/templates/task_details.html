@@ -23,7 +23,7 @@
         <li>Eta: {{ task.eta }}</li>
         <li>Expires: {{ task.expires }}</li>
         <li>Retries: {{ task.retires }}</li>
-        <li>Result: {{ task.result }}</li>
+        <li>Result: {{ task.result|safe }}</li>
         <li>Exception: {{ task.exception }}</li>
         <li>Timestamp: {{ task.timestamp }}</li>
         <li>Runtime: {{ task.runtime }}</li>

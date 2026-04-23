@@ -1,4 +1,5 @@
 import ast
+import os
 import time
 
 import requests
@@ -8,7 +9,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
 from django.core.files.storage import default_storage
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
@@ -178,12 +179,15 @@ def task_details(request, uuid):
 def alarms_uni(request):
     send_data(request)
     if request.user.is_authenticated:
+        task_id = cache.get(f"user_task_alarms_{request.user.id}")
         if request.method == "POST":
             input_xlsx = request.FILES.get("input_xlsx")
             output_xlsx = request.POST.get("output_xlsx")
+            if not output_xlsx.lower().endswith(".xlsx"):
+                output_xlsx += ".xlsx"
             input_txt = request.FILES.get("input_txt")
             if input_xlsx and output_xlsx and input_txt:
-                alarms_tp_uni.delay(
+                task = alarms_tp_uni.delay(
                     input_xlsx=default_storage.path(
                         default_storage.save(f"{input_xlsx.name}", input_xlsx)
                     ),
@@ -194,9 +198,30 @@ def alarms_uni(request):
                     ),
                     user_id=request.user.id,
                 )
+                task_id = task.id
+                cache.set(f"user_task_alarms_{request.user.id}", task_id, timeout=1800)
                 return redirect("alarms_uni")
             else:
                 return redirect("alarms_uni")
-        return render(request, "alarms_uni.html")
+        if task_id:
+            if AsyncResult(task_id).ready():
+                cache.delete(f"user_task_alarms_{request.user.id}")
+                task_id = None
+                return redirect("output_site")
+        return render(request, "alarms_uni.html", {"task_id": task_id})
+    else:
+        return render(request, "access_denied.html")
+
+
+def download(request, user_id, output_xlsx, og_output_xlsx):
+    if request.user.is_authenticated and str(request.user.id) == user_id:
+        return FileResponse(
+            open(
+                os.path.join(f"UserFiles/{user_id}", output_xlsx),
+                "rb",
+            ),
+            as_attachment=True,
+            filename=og_output_xlsx,
+        )
     else:
         return render(request, "access_denied.html")

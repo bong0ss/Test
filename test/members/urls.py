@@ -19,4 +19,9 @@ urlpatterns = [
         "output-site/task-details/<str:uuid>", views.task_details, name="task_details"
     ),
     path("alarms_uni/", views.alarms_uni, name="alarms_uni"),
+    path(
+        "download/<str:user_id>/<str:output_xlsx>/<str:og_output_xlsx>",
+        views.download,
+        name="download",
+    ),
 ]

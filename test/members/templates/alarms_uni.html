@@ -1,5 +1,7 @@
 {% extends 'master.html' %}
 
+{% load static %}
+
 {% block title %}
     Alarms TP to unified
 {% endblock %}
@@ -13,5 +15,6 @@
     <p>Tags to fix: <input type="file" name="input_txt" accept=".txt" required></p>
     <p><center><button type="submit">Submit</button></center></p>
 </form>
+</p>
 
 {% endblock %}
