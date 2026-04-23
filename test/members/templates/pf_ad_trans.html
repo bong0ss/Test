@@ -1,0 +1,163 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Proface adress translator
+{% endblock %}
+
+{% block content %}
+<h1>Proface adress translator</h1>
+<form action="{% url 'pf_ad_trans' %}" method="POST" id="pf_ad_trans">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <th>Start PLC:</th>
+            <th>Start PROFACE:</th>
+        </tr>
+        <tr>
+            <th><input type="tel" id="start_dbw" min="0" maxlength="4" size="8" placeholder="START DBW" oninput="this.value = this.value.replace(/[^0-9]/g, String())"></th>
+            <th><input type="tel" id="start_ls" min="0" maxlength="4" size="8" placeholder="START LS" oninput="this.value = this.value.replace(/[^0-9]/g, String())"></th>
+        </tr>
+        <tr>
+            <th><button id="plc-proface" onclick="showplc()" type="button">PLC → PROFACE</button></th>
+            <th><button id="proface-plc" onclick="showproface()" type="button">PROFACE → PLC</button></th>
+        </tr>
+        <tr id="plc">
+            <th colspan="2" id="plc_th">
+                <h3>PLC → PROFACE</h3>
+                <button type="button" onclick="plc_add_w()">WORD</button>
+                <button type="button" onclick="plc_add_wb()">WORD+BIT</button><br>
+            </th>
+        </tr>
+        <tr id="proface">
+            <th colspan="2" id="proface_th">
+                <h3>PROFACE → PLC</h3>
+                <button type="button" onclick="proface_add_w()">WORD</button>
+                <button type="button" onclick="proface_add_wb()">WORD+BIT</button><br>
+            </th>
+        </tr>
+    </table>
+    <button type="button" onclick="submitData()">Submit</button>
+</form>
+<p id="resultp"></p>
+<script>
+showplc()
+var id = 0
+function showplc()
+{
+    document.getElementById("plc").style.display = "block"
+    document.getElementById("proface").style.display = "none"
+}
+function showproface()
+{
+    document.getElementById("proface").style.display = "block"
+    document.getElementById("plc").style.display = "none"
+}
+function plc_add_w()
+{
+    document.getElementById("plc_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    id += 1
+}
+function plc_add_wb()
+{
+    document.getElementById("plc_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" maxlength="4" size="3" placeholder="B" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    id += 1
+}
+function proface_add_w()
+{
+    document.getElementById("proface_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    id += 1
+}
+function proface_add_wb()
+{
+    document.getElementById("proface_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" maxlength="4" size="3" placeholder="B" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    id += 1
+}
+function submitData()
+{
+var data_to_submit = {};
+var start_dbw = document.getElementById("start_dbw").value;
+var start_ls = document.getElementById("start_ls").value;
+    if(start_dbw == "" || start_ls == ""){alert("Start PLC and Start Proface can't be empty!"); return}
+    if (document.getElementById("plc").style.display == "block")
+    {
+        data_to_submit = {}
+        if (document.getElementById("plc_th").querySelector("input") != null)
+        {
+            for (var element of document.getElementById("plc_th").querySelectorAll("input"))
+            {
+                let key = element.parentElement.id
+                if(!data_to_submit[key]) {data_to_submit[key] = [];}
+                if (element.value == "")
+                {
+                    alert("Delete or fill empty fields!");
+                    data_to_submit = {}
+                    return;
+                }
+                else
+                {
+                    data_to_submit[key].push(element.name, element.value)
+                }
+            }
+            sendData(data_to_submit, start_dbw, start_ls, "plc")
+        }
+        else return;
+    }
+    else if (document.getElementById("proface").style.display == "block")
+    {
+        data_to_submit = {}
+        if (document.getElementById("proface_th").querySelector("input") != null)
+        {
+            for (var element of document.getElementById("proface_th").querySelectorAll("input"))
+            {
+                let key = element.parentElement.id
+                if(!data_to_submit[key]) {data_to_submit[key] = [];}
+                if (element.value == "")
+                {
+                    alert("Delete or fill empty fields!");
+                    data_to_submit = {}
+                    return;
+                }
+                else
+                {
+                    data_to_submit[key].push(element.name, element.value)
+                }
+            }
+            sendData(data_to_submit, start_dbw, start_ls, "proface")
+        }
+        else return;
+    }
+}
+function deleteField(the_id)
+{
+    document.getElementById(the_id).remove()
+    id-=1
+}
+function sendData(dataToSubmit, startDBW, startLS, function_type)
+{
+    fetch('', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+    body: JSON.stringify({intData: dataToSubmit, startdbw: startDBW, startls: startLS, function_type: function_type})}).then(response => response.json())
+    .then(result => {if(result.status === 'success'){showResults(result.values)}})
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+function showResults(values)
+{
+    var resultp = document.getElementById("resultp");
+    resultp.innerHTML = JSON.stringify(values);
+}
+</script>
+{% endblock %}

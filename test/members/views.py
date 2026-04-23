@@ -1,4 +1,5 @@
 import ast
+import json
 import os
 import time
 
@@ -9,11 +10,11 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.cache import cache
 from django.core.files.storage import default_storage
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
-from .tasks import add, alarms_tp_uni, mult, sub, timer
+from .tasks import add, alarms_tp_uni, mult, proface_adress_translate, sub, timer
 from .utility import send_data
 
 
@@ -223,5 +224,27 @@ def download(request, user_id, output_xlsx, og_output_xlsx):
             as_attachment=True,
             filename=og_output_xlsx,
         )
+    else:
+        return render(request, "access_denied.html")
+
+
+def pf_ad_trans(request):
+    send_data(request)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            try:
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "values": proface_adress_translate.delay(
+                            json.loads(request.body), user_id=request.user.id
+                        ).get,
+                    }
+                )
+            except json.JSONDecodeError:
+                return JsonResponse(
+                    {"status": "error", "message": "Invalid JSON"}, status=400
+                )
+        return render(request, "pf_ad_trans.html")
     else:
         return render(request, "access_denied.html")

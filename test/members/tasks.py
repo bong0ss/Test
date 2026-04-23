@@ -16,6 +16,12 @@ from .alarms_TP_to_unified import (
     strip_index,
     to_int,
 )
+from .proface_adress_translator import (
+    dbb_to_ls_word,  # noqa: F401
+    dbx_to_ls,  # noqa: F401
+    ls_bit_to_dbx,  # noqa: F401
+    ls_to_dbb_bytes,  # noqa: F401
+)
 from .utility import custom_data
 
 logger = logging.getLogger(__name__)
@@ -113,5 +119,15 @@ def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
     os.makedirs(f"UserFiles/{str(user_id)}", exist_ok=True)
     shutil.move(output_xlsx, f"UserFiles/{str(user_id)}")
     return mark_safe(
-        f'<a href="{reverse('download', args=[user_id, output_xlsx, og_output_xlsx])}">Pobierz plik</a>'
+        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx])}">Pobierz plik</a>'
     )
+
+
+@shared_task(bind=True)
+def proface_adress_translate(self, data, user_id=None):
+    int_data = data.get("intData", {})
+    for i in int_data:
+        print(i)
+        for element in int_data[i]:
+            print(element[0] + "_" + element[1])
+    return "Esss"

@@ -24,4 +24,5 @@ urlpatterns = [
         views.download,
         name="download",
     ),
+    path("pf_ad_trans/", views.pf_ad_trans, name="pf_ad_trans"),
 ]
