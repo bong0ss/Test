@@ -18,40 +18,27 @@
             <th><input type="tel" id="start_ls" min="0" maxlength="4" size="8" placeholder="START LS" oninput="this.value = this.value.replace(/[^0-9]/g, String())"></th>
         </tr>
         <tr>
-            <th><button id="plc-proface" onclick="showplc()" type="button">PLC → PROFACE</button></th>
-            <th><button id="proface-plc" onclick="showproface()" type="button">PROFACE → PLC</button></th>
-        </tr>
-        <tr id="plc">
-            <th colspan="2" id="plc_th">
+            <th>
                 <h3>PLC → PROFACE</h3>
                 <button type="button" onclick="plc_add_w()">WORD</button>
                 <button type="button" onclick="plc_add_wb()">WORD+BIT</button><br>
             </th>
-        </tr>
-        <tr id="proface">
-            <th colspan="2" id="proface_th">
+            <th>
                 <h3>PROFACE → PLC</h3>
                 <button type="button" onclick="proface_add_w()">WORD</button>
                 <button type="button" onclick="proface_add_wb()">WORD+BIT</button><br>
             </th>
         </tr>
+        <tr>
+            <th id="plc_th"></th>
+            <th id="proface_th"></th>
+        </tr>
     </table>
-    <button type="button" onclick="submitData()">Submit</button>
+    <br><br><button type="button" onclick="submitData()">Submit</button>
 </form>
 <p id="resultp" style="width: 5%; margin-left: auto; margin-right: auto; text-align: left;"></p>
 <script>
-showplc()
 var id = 0
-function showplc()
-{
-    document.getElementById("plc").style.display = "block"
-    document.getElementById("proface").style.display = "none"
-}
-function showproface()
-{
-    document.getElementById("proface").style.display = "block"
-    document.getElementById("plc").style.display = "none"
-}
 function plc_add_w()
 {
     document.getElementById("plc_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
@@ -74,88 +61,72 @@ function proface_add_wb()
 }
 function submitData()
 {
-var data_to_submit = {};
-var start_dbw = document.getElementById("start_dbw").value;
-var start_ls = document.getElementById("start_ls").value;
+    var data_to_submit = {"plc": {}, "proface": {}};
+    var start_dbw = document.getElementById("start_dbw").value;
+    var start_ls = document.getElementById("start_ls").value;
     if(start_dbw == "" || start_ls == ""){alert("Start PLC and Start Proface can't be empty!"); return}
-    if (document.getElementById("plc").style.display == "block")
+    if (document.getElementById("plc_th").querySelector("input") != null)
     {
-        data_to_submit = {}
-        if (document.getElementById("plc_th").querySelector("input") != null)
+        for (var element of document.getElementById("plc_th").querySelectorAll("input"))
         {
-            for (var element of document.getElementById("plc_th").querySelectorAll("input"))
+            let key = element.parentElement.id
+            let key2 = element.name
+            if (!data_to_submit["plc"][key]) {data_to_submit["plc"][key] = [];}
+            if (element.value == "")
             {
-                let key = element.parentElement.id
-                let key2 = element.name
-                if (!data_to_submit[key]) {data_to_submit[key] = [];}
-                if (element.value == "")
-                {
-                    alert("Delete or fill empty fields!");
-                    data_to_submit = {}
-                    return;
-                }
-                else if (element.name == "bit" && parseInt(element.value, 10) > 7 && parseInt(element.value, 10) < 0)
-                {
-                    alert("Bit must be in range 0..7!");
-                    data_to_submit = {}
-                    return;
-                }
-                else if (element.name == "word" && parseInt(element.value, 10) < start_dbw)
-                {
-                    alert("Byte address is before mapping start!");
-                    data_to_submit = {}
-                    return;
-                }
-                else
-                {
-                    let item = {}
-                    item[key2]=element.value
-                    data_to_submit[key].push(item)
-                }
+                alert("Delete or fill empty fields!");
+                return;
             }
-            sendData(data_to_submit, start_dbw, start_ls, "plc")
+            else if (element.name == "bit" && parseInt(element.value, 10) > 7 || parseInt(element.value, 10) < 0)
+            {
+                alert("Bit must be in range 0..7!");
+                return;
+            }
+            else if (element.name == "word" && parseInt(element.value, 10) < start_dbw)
+            {
+                alert("Byte address is before mapping start!");
+                return;
+            }
+            else
+            {
+                let item = {}
+                item[key2]=element.value
+                data_to_submit["plc"][key].push(item)
+            }
         }
-        else return;
     }
-    else if (document.getElementById("proface").style.display == "block")
+    if (document.getElementById("proface_th").querySelector("input") != null)
     {
-        data_to_submit = {}
-        if (document.getElementById("proface_th").querySelector("input") != null)
+        for (var element of document.getElementById("proface_th").querySelectorAll("input"))
         {
-            for (var element of document.getElementById("proface_th").querySelectorAll("input"))
+            let key = element.parentElement.id
+            let key2 = element.name
+            if(!data_to_submit["proface"][key]) {data_to_submit["proface"][key] = [];}
+            if (element.value == "")
             {
-                let key = element.parentElement.id
-                let key2 = element.name
-                if(!data_to_submit[key]) {data_to_submit[key] = [];}
-                if (element.value == "")
-                {
-                    alert("Delete or fill empty fields!");
-                    data_to_submit = {}
-                    return;
-                }
-                else if (element.name == "bit" && parseInt(element.value, 10) > 15 && parseInt(element.value, 10) < 0)
-                {
-                    alert("Bit must be in range 0..15!");
-                    data_to_submit = {}
-                    return;
-                }
-                else if (element.name == "word" && parseInt(element.value, 10) < start_ls)
-                {
-                    alert("LS address is before mapping start!");
-                    data_to_submit = {}
-                    return;
-                }
-                else
-                {
-                    let item = {}
-                    item[key2]=element.value
-                    data_to_submit[key].push(item)
-                }
+                alert("Delete or fill empty fields!");
+                return;
             }
-            sendData(data_to_submit, start_dbw, start_ls, "proface")
+            else if (element.name == "bit" && parseInt(element.value, 10) > 15 || parseInt(element.value, 10) < 0)
+            {
+                alert("Bit must be in range 0..15!");
+                return;
+            }
+            else if (element.name == "word" && parseInt(element.value, 10) < start_ls)
+            {
+                alert("LS address is before mapping start!");
+                return;
+            }
+            else
+            {
+                let item = {}
+                item[key2]=element.value
+                data_to_submit["proface"][key].push(item)
+            }
         }
-        else return;
+        
     }
+    sendData(data_to_submit, start_dbw, start_ls)
 }
 function deleteField(the_id)
 {
@@ -167,7 +138,7 @@ function sendData(dataToSubmit, startDBW, startLS, function_type)
     fetch('', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
-    body: JSON.stringify({intData: dataToSubmit, startdbw: startDBW, startls: startLS, function_type: function_type})}).then(response => response.json())
+    body: JSON.stringify({intData: dataToSubmit, startdbw: startDBW, startls: startLS})}).then(response => response.json())
     .then(result => {if(result.status === 'success'){showResults(result.values)}})
 }
 function getCookie(name) {

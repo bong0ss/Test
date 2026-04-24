@@ -207,9 +207,10 @@ def alarms_uni(request):
         if task_id:
             if AsyncResult(task_id).ready():
                 cache.delete(f"user_task_alarms_{request.user.id}")
-                task_id = None
-                return redirect("output_site")
-        return render(request, "alarms_uni.html", {"task_id": task_id})
+                return render(
+                    request, "alarms_uni.html", {"button": AsyncResult(task_id).get()}
+                )
+        return render(request, "alarms_uni.html")
     else:
         return render(request, "access_denied.html")
 
