@@ -5,6 +5,13 @@
 {% endblock %}
 
 {% block content %}
+<nav>
+    <b>Name: </b>{{ tool.name }}<br>
+    <b>Description: </b>{{ tool.description }}<br>
+    <b>Inputs: </b>{{ tool.inputs }}
+    <b>Outputs: </b>{{ tool.outputs }}
+</nav>
+
 <h1>Proface adress translator</h1>
 <form action="{% url 'pf_ad_trans' %}" method="POST" id="pf_ad_trans">
     {% csrf_token %}

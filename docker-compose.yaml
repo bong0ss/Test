@@ -13,7 +13,7 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-    command: /bin/sh -c "python /app/test/manage.py migrate && gunicorn --chdir /app/test --bind 0.0.0.0:8000 --workers 4 --reload test.wsgi:application"
+    command: /bin/sh -c "python /app/test/manage.py migrate && gunicorn --chdir /app/test --bind 0.0.0.0:8000 --workers 4 --worker-class sync --reload test.wsgi:application"
     develop:
       watch:
         - action: sync

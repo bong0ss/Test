@@ -7,6 +7,13 @@
 {% endblock %}
 
 {% block content %}
+<nav>
+    <b>Name: </b>{{ tool.name }}<br>
+    <b>Description: </b>{{ tool.description }}<br>
+    <b>Inputs: </b>{{ tool.inputs }}
+    <b>Outputs: </b>{{ tool.outputs }}
+</nav>
+
 <h1>Alarms TP to unified</h1>
 <form action="{% url 'alarms_uni' %}" method="POST" enctype="multipart/form-data" style="width: 15%; text-align: left; margin-left: auto; margin-right: auto;">
     {% csrf_token %}

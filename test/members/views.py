@@ -14,6 +14,7 @@ from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
+from .models import Tools
 from .tasks import (
     add,
     alarms_tp_uni,
@@ -191,6 +192,7 @@ def alarms_uni(request):
     send_data(request)
     if request.user.is_authenticated:
         task_id = cache.get(f"user_task_alarms_{request.user.id}")
+        context = {"tool": Tools.objects.filter(tool_id=1).first()}
         if request.method == "POST":
             input_xlsx = request.FILES.get("input_xlsx")
             output_xlsx = request.POST.get("output_xlsx")
@@ -213,14 +215,13 @@ def alarms_uni(request):
                 cache.set(f"user_task_alarms_{request.user.id}", task_id, timeout=1800)
                 return redirect("alarms_uni")
             else:
-                return redirect("alarms_uni")
+                return render(request, "alarms_uni.html", context)
         if task_id:
             if AsyncResult(task_id).ready():
                 cache.delete(f"user_task_alarms_{request.user.id}")
-                return render(
-                    request, "alarms_uni.html", {"button": AsyncResult(task_id).get()}
-                )
-        return render(request, "alarms_uni.html")
+                context["button"] = AsyncResult(task_id).get()
+                return render(request, "alarms_uni.html", context)
+        return render(request, "alarms_uni.html", context)
     else:
         return render(request, "access_denied.html")
 
@@ -243,6 +244,7 @@ def download(request, user_id, output_xlsx, og_output_xlsx, folder_name):
 def pf_ad_trans(request):
     send_data(request)
     if request.user.is_authenticated:
+        context = {"tool": Tools.objects.filter(tool_id=1).first()}
         if request.method == "POST":
             try:
                 return JsonResponse(
@@ -257,7 +259,7 @@ def pf_ad_trans(request):
                 return JsonResponse(
                     {"status": "error", "values": "Invalid JSON"}, status=400
                 )
-        return render(request, "pf_ad_trans.html")
+        return render(request, "pf_ad_trans.html", context)
     else:
         return render(request, "access_denied.html")
 
@@ -265,6 +267,7 @@ def pf_ad_trans(request):
 def xlsx_merge(request):
     send_data(request)
     if request.user.is_authenticated:
+        context = {"tool": Tools.objects.filter(tool_id=1).first()}
         task_id = cache.get(f"user_task_merge_{request.user.id}")
         if request.method == "POST":
             og_xlsx = request.FILES.get("og_xlsx")
@@ -303,13 +306,12 @@ def xlsx_merge(request):
                 cache.set(f"user_task_merge_{request.user.id}", task_id, timeout=3600)
                 return redirect("xlsx_merge")
             else:
-                return redirect("xlsx_merge")
+                return render(request, "xlsx_merge.html", context)
         if task_id:
             if AsyncResult(task_id).ready():
                 cache.delete(f"user_task_merge_{request.user.id}")
-                return render(
-                    request, "xlsx_merge.html", {"button": AsyncResult(task_id).get()}
-                )
-        return render(request, "xlsx_merge.html")
+                context["button"] = AsyncResult(task_id).get()
+                return render(request, "xlsx_merge.html", context)
+        return render(request, "xlsx_merge.html", context)
     else:
         return render(request, "access_denied.html")
