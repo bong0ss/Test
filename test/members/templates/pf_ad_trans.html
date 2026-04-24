@@ -38,7 +38,7 @@
     </table>
     <button type="button" onclick="submitData()">Submit</button>
 </form>
-<p id="resultp"></p>
+<p id="resultp" style="width: 5%; margin-left: auto; margin-right: auto; text-align: left;"></p>
 <script>
 showplc()
 var id = 0
@@ -59,7 +59,7 @@ function plc_add_w()
 }
 function plc_add_wb()
 {
-    document.getElementById("plc_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" maxlength="4" size="3" placeholder="B" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    document.getElementById("plc_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" max="7" maxlength="1" size="1" placeholder="B" pattern="[0-9]{0,7}" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
     id += 1
 }
 function proface_add_w()
@@ -69,7 +69,7 @@ function proface_add_w()
 }
 function proface_add_wb()
 {
-    document.getElementById("proface_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" maxlength="4" size="3" placeholder="B" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
+    document.getElementById("proface_th").insertAdjacentHTML('beforeend', '<a id="' + id +'">WORD+BIT: <input type="tel" name="word" min="0" maxlength="4" size="3" placeholder="W" oninput="this.value = this.value.replace(/[^0-9]/g, String())"> <input type="tel" name="bit" min="0" max="15" maxlength="2" size="2" placeholder="B" pattern="[0-9]{0,15}" oninput="this.value = this.value.replace(/[^0-9]/g, String())"><button type="button" onclick="deleteField(this.parentElement.id)">-</button><br></a>')
     id += 1
 }
 function submitData()
@@ -86,16 +86,31 @@ var start_ls = document.getElementById("start_ls").value;
             for (var element of document.getElementById("plc_th").querySelectorAll("input"))
             {
                 let key = element.parentElement.id
-                if(!data_to_submit[key]) {data_to_submit[key] = [];}
+                let key2 = element.name
+                if (!data_to_submit[key]) {data_to_submit[key] = [];}
                 if (element.value == "")
                 {
                     alert("Delete or fill empty fields!");
                     data_to_submit = {}
                     return;
                 }
+                else if (element.name == "bit" && parseInt(element.value, 10) > 7 && parseInt(element.value, 10) < 0)
+                {
+                    alert("Bit must be in range 0..7!");
+                    data_to_submit = {}
+                    return;
+                }
+                else if (element.name == "word" && parseInt(element.value, 10) < start_dbw)
+                {
+                    alert("Byte address is before mapping start!");
+                    data_to_submit = {}
+                    return;
+                }
                 else
                 {
-                    data_to_submit[key].push(element.name, element.value)
+                    let item = {}
+                    item[key2]=element.value
+                    data_to_submit[key].push(item)
                 }
             }
             sendData(data_to_submit, start_dbw, start_ls, "plc")
@@ -110,6 +125,7 @@ var start_ls = document.getElementById("start_ls").value;
             for (var element of document.getElementById("proface_th").querySelectorAll("input"))
             {
                 let key = element.parentElement.id
+                let key2 = element.name
                 if(!data_to_submit[key]) {data_to_submit[key] = [];}
                 if (element.value == "")
                 {
@@ -117,9 +133,23 @@ var start_ls = document.getElementById("start_ls").value;
                     data_to_submit = {}
                     return;
                 }
+                else if (element.name == "bit" && parseInt(element.value, 10) > 15 && parseInt(element.value, 10) < 0)
+                {
+                    alert("Bit must be in range 0..15!");
+                    data_to_submit = {}
+                    return;
+                }
+                else if (element.name == "word" && parseInt(element.value, 10) < start_ls)
+                {
+                    alert("LS address is before mapping start!");
+                    data_to_submit = {}
+                    return;
+                }
                 else
                 {
-                    data_to_submit[key].push(element.name, element.value)
+                    let item = {}
+                    item[key2]=element.value
+                    data_to_submit[key].push(item)
                 }
             }
             sendData(data_to_submit, start_dbw, start_ls, "proface")
@@ -155,9 +185,13 @@ function getCookie(name) {
     return cookieValue;
 }
 function showResults(values)
-{
-    var resultp = document.getElementById("resultp");
-    resultp.innerHTML = JSON.stringify(values);
+{ 
+    var text = ""
+    for(var i of Object.values(JSON.parse(values)))
+    {
+        text += "<li>" + i + "</li>"
+    }
+    document.getElementById("resultp").innerHTML = "<br><center><h3>Results:</h3></center><ul style='list-style-type: none;'>" + text + "</ul>";
 }
 </script>
 {% endblock %}

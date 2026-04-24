@@ -238,12 +238,12 @@ def pf_ad_trans(request):
                         "status": "success",
                         "values": proface_adress_translate.delay(
                             json.loads(request.body), user_id=request.user.id
-                        ).get,
+                        ).get(),
                     }
                 )
             except json.JSONDecodeError:
                 return JsonResponse(
-                    {"status": "error", "message": "Invalid JSON"}, status=400
+                    {"status": "error", "values": "Invalid JSON"}, status=400
                 )
         return render(request, "pf_ad_trans.html")
     else:

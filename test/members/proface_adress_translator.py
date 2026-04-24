@@ -1,5 +1,11 @@
-START_DBW = 14
-START_LS = 3004
+START_DBW = 0
+START_LS = 0
+
+
+def change_start_val(startdbw, startls):
+    global START_DBW, START_LS
+    START_DBW = startdbw
+    START_LS = startls
 
 
 def dbw_to_ls(dbw: int) -> int:
@@ -139,13 +145,3 @@ def memcpy_end_from_count(start_dbw: int, count: int) -> int:
     if count < 1:
         raise ValueError("count must be >= 1")
     return start_dbw + (count - 1) * 2
-
-
-if __name__ == "__main__":
-    print("=== PLC -> Pro-face ===")
-    print("DBX660.0 ->", dbx_to_ls(660, 0))  # LS332708
-    print("DBB662   -> LS", dbb_to_ls_word(662))  # LS3328
-
-    print("\n=== Pro-face -> PLC ===")
-    print("LS332708 ->", ls_bit_to_dbx(3327, 8))  # DBX660.0
-    print("LS3328    -> DBB", ls_to_dbb_bytes(3328))  # (662, 663)

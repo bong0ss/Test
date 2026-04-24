@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -17,10 +18,11 @@ from .alarms_TP_to_unified import (
     to_int,
 )
 from .proface_adress_translator import (
-    dbb_to_ls_word,  # noqa: F401
-    dbx_to_ls,  # noqa: F401
-    ls_bit_to_dbx,  # noqa: F401
-    ls_to_dbb_bytes,  # noqa: F401
+    change_start_val,
+    dbb_to_ls_word,
+    dbx_to_ls,
+    ls_bit_to_dbx,
+    ls_to_dbb_bytes,
 )
 from .utility import custom_data
 
@@ -125,9 +127,30 @@ def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
 
 @shared_task(bind=True)
 def proface_adress_translate(self, data, user_id=None):
+    change_start_val(int(data.get("startdbw")), int(data.get("startls")))
     int_data = data.get("intData", {})
+    function_type = data.get("function_type")
+    results = []
+    results_json = {}
     for i in int_data:
-        print(i)
-        for element in int_data[i]:
-            print(element[0] + "_" + element[1])
-    return "Esss"
+        if len(int_data[i]) > 1:
+            if function_type == "plc":
+                results.append(
+                    dbx_to_ls(
+                        int(int_data[i][0].get("word")), int(int_data[i][1].get("bit"))
+                    )
+                )
+            elif function_type == "proface":
+                results.append(
+                    ls_bit_to_dbx(
+                        int(int_data[i][0].get("word")), int(int_data[i][1].get("bit"))
+                    )
+                )
+        else:
+            if function_type == "plc":
+                results.append(dbb_to_ls_word(int(int_data[i][0].get("word"))))
+            elif function_type == "proface":
+                results.append(ls_to_dbb_bytes(int(int_data[i][0].get("word"))))
+    for i, value in enumerate(results):
+        results_json[i] = value
+    return json.dumps(results_json)
