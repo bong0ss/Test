@@ -14,7 +14,15 @@ from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 
-from .tasks import add, alarms_tp_uni, mult, proface_adress_translate, sub, timer
+from .tasks import (
+    add,
+    alarms_tp_uni,
+    merge_xlsx,
+    mult,
+    proface_adress_translate,
+    sub,
+    timer,
+)
 from .utility import send_data
 
 
@@ -149,7 +157,7 @@ def output_site(request):
             requests.get("http://flower:5555/api/tasks", timeout=2).json().items()
         ):
             raw_kwargs = task_data["kwargs"].replace("\n", "").replace("\r", "")
-            if ast.literal_eval(raw_kwargs)["user_id"] == request.user.id:
+            if ast.literal_eval(raw_kwargs).get("user_id") == request.user.id:
                 task_data["uuid"] = task_id
                 task_data["started"] = time.ctime(task_data["started"])
                 user_tasks.append(task_data)
@@ -164,6 +172,8 @@ def task_details(request, uuid):
         item = requests.get(
             f"http://flower:5555/api/task/info/{uuid}", timeout=2
         ).json()
+        if not item:
+            return render(request, "access_denied.html")
         raw_kwargs = item["kwargs"].replace("\n", "").replace("\r", "")
         if ast.literal_eval(raw_kwargs)["user_id"] == request.user.id:
             return render(
@@ -215,11 +225,12 @@ def alarms_uni(request):
         return render(request, "access_denied.html")
 
 
-def download(request, user_id, output_xlsx, og_output_xlsx):
+def download(request, user_id, output_xlsx, og_output_xlsx, folder_name):
+    send_data(request)
     if request.user.is_authenticated and str(request.user.id) == user_id:
         return FileResponse(
             open(
-                os.path.join(f"UserFiles/{user_id}", output_xlsx),
+                os.path.join(f"UserFiles/{user_id}/{folder_name}", output_xlsx),
                 "rb",
             ),
             as_attachment=True,
@@ -247,5 +258,58 @@ def pf_ad_trans(request):
                     {"status": "error", "values": "Invalid JSON"}, status=400
                 )
         return render(request, "pf_ad_trans.html")
+    else:
+        return render(request, "access_denied.html")
+
+
+def xlsx_merge(request):
+    send_data(request)
+    if request.user.is_authenticated:
+        task_id = cache.get(f"user_task_merge_{request.user.id}")
+        if request.method == "POST":
+            og_xlsx = request.FILES.get("og_xlsx")
+            og_names = request.POST.get("og_names")
+            og_values = request.POST.get("og_values")
+            fix_xlsx = request.FILES.get("fix_xlsx")
+            fix_names = request.POST.get("fix_names")
+            fix_values = request.POST.get("fix_values")
+            output_xlsx = request.POST.get("output_xlsx")
+            if (
+                og_xlsx is not None
+                and og_names != ""
+                and og_values != ""
+                and fix_xlsx is not None
+                and fix_names != ""
+                and fix_values != ""
+                and output_xlsx != ""
+            ):
+                if not output_xlsx.lower().endswith(".xlsx"):
+                    output_xlsx += ".xlsx"
+                task = merge_xlsx.delay(
+                    default_storage.path(
+                        default_storage.save(f"{og_xlsx.name}", og_xlsx)
+                    ),
+                    og_names,
+                    og_values,
+                    default_storage.path(
+                        default_storage.save(f"{fix_xlsx.name}", fix_xlsx)
+                    ),
+                    fix_names,
+                    fix_values,
+                    output_xlsx,
+                    user_id=request.user.id,
+                )
+                task_id = task.id
+                cache.set(f"user_task_merge_{request.user.id}", task_id, timeout=3600)
+                return redirect("xlsx_merge")
+            else:
+                return redirect("xlsx_merge")
+        if task_id:
+            if AsyncResult(task_id).ready():
+                cache.delete(f"user_task_merge_{request.user.id}")
+                return render(
+                    request, "xlsx_merge.html", {"button": AsyncResult(task_id).get()}
+                )
+        return render(request, "xlsx_merge.html")
     else:
         return render(request, "access_denied.html")

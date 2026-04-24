@@ -4,11 +4,11 @@ import os
 import shutil
 import time
 
+import openpyxl
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from openpyxl import load_workbook
 
 from .alarms_TP_to_unified import (
     convert_fieldinfo,
@@ -59,7 +59,7 @@ def timer(self, time_left, user_id=None):
 
 @shared_task(bind=True)
 def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
-    wb = load_workbook(input_xlsx)
+    wb = openpyxl.load_workbook(input_xlsx)
     ws = wb["DiscreteAlarms"]
     og_output_xlsx = output_xlsx
     output_xlsx = str(user_id) + "_" + str(int(time.time())) + "_" + output_xlsx
@@ -118,10 +118,10 @@ def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
     if os.path.exists(input_xlsx):
         os.remove(input_xlsx)
     wb.save(output_xlsx)
-    os.makedirs(f"UserFiles/{str(user_id)}", exist_ok=True)
-    shutil.move(output_xlsx, f"UserFiles/{str(user_id)}")
+    os.makedirs(f"UserFiles/{str(user_id)}/alarmsTPuni", exist_ok=True)
+    shutil.move(output_xlsx, f"UserFiles/{str(user_id)}/alarmsTPuni")
     return mark_safe(
-        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx])}">Download</a>'
+        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "alarmsTPuni"])}">Download</a>'
     )
 
 
@@ -155,3 +155,47 @@ def proface_adress_translate(self, data, user_id=None):
     for i, value in enumerate(results):
         results_json[i] = value
     return json.dumps(results_json)
+
+
+@shared_task(bind=True)
+def merge_xlsx(
+    self,
+    og_xlsx,
+    og_names,
+    og_values,
+    fix_xlsx,
+    fix_names,
+    fix_values,
+    output_xlsx,
+    user_id=None,
+):
+    og_output_xlsx = output_xlsx
+    output_xlsx = str(user_id) + "_" + str(int(time.time())) + "_" + output_xlsx
+    wb = openpyxl.load_workbook(og_xlsx)
+    og_wb = wb.active
+    fix_wb = openpyxl.load_workbook(fix_xlsx).active
+
+    og_values = ord(og_values.upper()) - 64
+    fix_values = ord(fix_values.upper()) - 64
+
+    for cell in fix_wb[fix_names]:
+        for newcell in og_wb[og_names]:
+            if cell.value is not None and cell.value == newcell.value:
+                if (
+                    og_wb.cell(newcell.row, og_values).value
+                    != fix_wb.cell(cell.row, fix_values).value
+                ):
+                    og_wb.cell(newcell.row, og_values).value = fix_wb.cell(
+                        cell.row, fix_values
+                    ).value
+
+    wb.save(output_xlsx)
+    os.makedirs(f"UserFiles/{str(user_id)}/FixedXLSX", exist_ok=True)
+    shutil.move(output_xlsx, f"UserFiles/{str(user_id)}/FixedXLSX")
+    if os.path.exists(og_xlsx):
+        os.remove(og_xlsx)
+    if os.path.exists(fix_xlsx):
+        os.remove(fix_xlsx)
+    return mark_safe(
+        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "FixedXLSX"])}">Download</a>'
+    )

@@ -72,27 +72,10 @@ function submitData()
             let key = element.parentElement.id
             let key2 = element.name
             if (!data_to_submit["plc"][key]) {data_to_submit["plc"][key] = [];}
-            if (element.value == "")
-            {
-                alert("Delete or fill empty fields!");
-                return;
-            }
-            else if (element.name == "bit" && parseInt(element.value, 10) > 7 || parseInt(element.value, 10) < 0)
-            {
-                alert("Bit must be in range 0..7!");
-                return;
-            }
-            else if (element.name == "word" && parseInt(element.value, 10) < start_dbw)
-            {
-                alert("Byte address is before mapping start!");
-                return;
-            }
-            else
-            {
-                let item = {}
-                item[key2]=element.value
-                data_to_submit["plc"][key].push(item)
-            }
+            if (element.value == ""){alert("Delete or fill empty fields!");return;}
+            else if (element.name == "bit" && parseInt(element.value, 10) > 7 || parseInt(element.value, 10) < 0){alert("Bit must be in range 0..7!");return;}
+            else if (element.name == "word" && parseInt(element.value, 10) < start_dbw){alert("Byte address is before mapping start!");return;}
+            else{let item = {};item[key2]=element.value;data_to_submit["plc"][key].push(item);}
         }
     }
     if (document.getElementById("proface_th").querySelector("input") != null)
@@ -102,29 +85,11 @@ function submitData()
             let key = element.parentElement.id
             let key2 = element.name
             if(!data_to_submit["proface"][key]) {data_to_submit["proface"][key] = [];}
-            if (element.value == "")
-            {
-                alert("Delete or fill empty fields!");
-                return;
-            }
-            else if (element.name == "bit" && parseInt(element.value, 10) > 15 || parseInt(element.value, 10) < 0)
-            {
-                alert("Bit must be in range 0..15!");
-                return;
-            }
-            else if (element.name == "word" && parseInt(element.value, 10) < start_ls)
-            {
-                alert("LS address is before mapping start!");
-                return;
-            }
-            else
-            {
-                let item = {}
-                item[key2]=element.value
-                data_to_submit["proface"][key].push(item)
-            }
-        }
-        
+            if (element.value == ""){alert("Delete or fill empty fields!");return;}
+            else if (element.name == "bit" && parseInt(element.value, 10) > 15 || parseInt(element.value, 10) < 0){alert("Bit must be in range 0..15!");return;}
+            else if (element.name == "word" && parseInt(element.value, 10) < start_ls){alert("LS address is before mapping start!");return;}
+            else{let item = {}; item[key2]=element.value; data_to_submit["proface"][key].push(item)}
+        }  
     }
     sendData(data_to_submit, start_dbw, start_ls)
 }

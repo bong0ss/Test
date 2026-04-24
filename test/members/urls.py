@@ -20,9 +20,10 @@ urlpatterns = [
     ),
     path("alarms_uni/", views.alarms_uni, name="alarms_uni"),
     path(
-        "download/<str:user_id>/<str:output_xlsx>/<str:og_output_xlsx>",
+        "download/<str:user_id>/<str:output_xlsx>/<str:og_output_xlsx>/<str:folder_name>/",
         views.download,
         name="download",
     ),
     path("pf_ad_trans/", views.pf_ad_trans, name="pf_ad_trans"),
+    path("xlsx_merge/", views.xlsx_merge, name="xlsx_merge"),
 ]

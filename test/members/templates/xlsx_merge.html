@@ -1,0 +1,26 @@
+{% extends 'master.html' %}
+
+{% block title %}
+    Excel File Merge
+{% endblock %}
+
+{% block content %}
+
+<h1>Excel File Merge</h1>
+<form action="{% url 'xlsx_merge' %}" method="POST" enctype="multipart/form-data" style="width: 15%; text-align: left; margin-left: auto; margin-right: auto;">
+{% csrf_token %}
+<p>Original XLSX: <input type="file" name="og_xlsx" accept=".xlsx" required>
+<small>(Excel file to be fixed)</small></p>
+<p>Names column: <input type="text" name="og_names" required></p>
+<p>Values column: <input type="text" name="og_values" required></p>
+<p>Fixed XLSX: <input type="file" name="fix_xlsx" accept=".xlsx" required>
+<small>(Excel file that is fixed)</small></p>
+<p>Names column: <input type="text" name="fix_names" required></p>
+<p>Values column: <input type="text" name="fix_values" required></p><br>
+<p>Output XLSX file name: <input type="text" name="output_xlsx" required></p>
+ <p><center><button type="submit">Submit</button></center></p>
+</form>
+
+<p>{{ button|safe }}</p>
+
+{% endblock %}
