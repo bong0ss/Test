@@ -6,7 +6,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("login_form/", views.login_form, name="login_form"),
     path("logoutsite/", views.logoutsite, name="logoutsite"),
-    path("customfunctions/time_function/", views.time_function, name="time_function"),
+    path("time_function/", views.time_function, name="time_function"),
     path("celery-progress/", include("celery_progress.urls")),
     path("output-site/", views.output_site, name="output_site"),
     path(

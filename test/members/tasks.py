@@ -31,18 +31,20 @@ from .utility import custom_data
 def timer(self, time_left, user_id=None):
     progress = ProgressRecorder(self)
     custom_data(
-        data=f"Action started at {time.ctime()}, await {time_left} seconds! Predicted to finish at {time.ctime(time.time() + time_left)}"
+        data=f"Task {self.request.id} started at {time.ctime()}, await {time_left} seconds! Predicted to finish at {time.ctime(time.time() + time_left)}"
     )
     for i in range(time_left):
         time.sleep(1)
+        custom_data(data=f"Task {self.request.id}: {i}s.")
         progress.set_progress(i + 1, time_left, description="Processing...")
-    custom_data(data=f"Action finished at {time.ctime()}")
+    custom_data(data=f"Task {self.request.id} finished at {time.ctime()}")
     return "Finished!"
 
 
 @shared_task(bind=True)
 def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
     custom_data(data=f"Task {self.request.id} started at {time.ctime()}.")
+    custom_data(data=f"Task {self.request.id}: Loading workbook.")
     wb = openpyxl.load_workbook(input_xlsx)
     ws = wb["DiscreteAlarms"]
     og_output_xlsx = output_xlsx
@@ -118,7 +120,7 @@ def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
 @shared_task(bind=True)
 def proface_adress_translate(self, data, user_id=None):
     custom_data(data=f"Task {self.request.id} started at {time.ctime()}.")
-    custom_data(data=f"Task {self.request.id}: Changing Starting Values.")
+    custom_data(data=f"Task {self.request.id}: Changing starting values.")
     change_start_val(int(data.get("startdbw")), int(data.get("startls")))
     int_data = data.get("intData", {})
     results = []
@@ -167,12 +169,15 @@ def merge_xlsx(
     user_id=None,
 ):
     custom_data(data=f"Task {self.request.id} started at {time.ctime()}.")
+    custom_data(data=f"Task {self.request.id}: Saving file name.")
     og_output_xlsx = output_xlsx
     output_xlsx = f"{user_id}_{int(time.time())}_{output_xlsx}"
     custom_data(data=f"Task {self.request.id}: Reading Excel files.")
     df_fix = pandas.read_excel(fix_xlsx)
     df_og = pandas.read_excel(og_xlsx)
-
+    custom_data(
+        data=f"Task {self.request.id}: Changing values from alphabetical to numeric."
+    )
     og_values = ord(og_values.upper()) - 65
     og_names = ord(og_names.upper()) - 65
     custom_data(data=f"Task {self.request.id}: Checking for missing columns.")
@@ -185,13 +190,14 @@ def merge_xlsx(
             df_fix.iloc[:, ord(fix_values.upper()) - 65],
         )
     )
-
+    custom_data(data=f"Task {self.request.id}: Starting first chunk.")
     first_chunk = True
-    chunk_size = 500
+    chunk_size = 1000
     custom_data(
-        data=f"Task {self.request.id}: Starting checking columns in chunks of {chunk_size}'s."
+        data=f"Task {self.request.id}: Starting checking columns in chunks of {chunk_size}."
     )
     for i in range(0, len(df_og), chunk_size):
+        custom_data(data=f"Task {self.request.id}: {i} of {len(df_og)}.")
         df_chunk = df_og.iloc[i : i + chunk_size].copy()
 
         mask = df_chunk.iloc[:, og_names].isin(fixes)
@@ -201,7 +207,6 @@ def merge_xlsx(
 
         mode = "w" if first_chunk else "a"
         if_exists = "overlay" if not first_chunk else None
-
         with pandas.ExcelWriter(
             output_xlsx, engine="openpyxl", mode=mode, if_sheet_exists=if_exists
         ) as writer:
@@ -212,9 +217,10 @@ def merge_xlsx(
 
         first_chunk = False
     custom_data(data=f"Task {self.request.id}: Finished checking.")
+    custom_data(data=f"Task {self.request.id}: Saving file.")
     os.makedirs(f"UserFiles/{str(user_id)}/FixedXLSX", exist_ok=True)
     shutil.move(output_xlsx, f"UserFiles/{str(user_id)}/FixedXLSX")
-    custom_data(data=f"Task {self.request.id}: Saving file.")
+    custom_data(data=f"Task {self.request.id}: Deleting old files.")
     if os.path.exists(og_xlsx):
         os.remove(og_xlsx)
     if os.path.exists(fix_xlsx):

@@ -290,5 +290,5 @@ def task_logs(request, task_id):
     return render(
         request,
         "task_logs.html",
-        {"logs": logs if logs else "No logs", "task_id": task_id},
+        {"logs": logs, "task_id": task_id},
     )
