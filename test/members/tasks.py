@@ -5,6 +5,7 @@ import shutil
 import time
 
 import openpyxl
+import pandas
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from django.urls import reverse
@@ -170,26 +171,48 @@ def merge_xlsx(
     user_id=None,
 ):
     og_output_xlsx = output_xlsx
-    output_xlsx = str(user_id) + "_" + str(int(time.time())) + "_" + output_xlsx
-    wb = openpyxl.load_workbook(og_xlsx)
-    og_wb = wb.active
-    fix_wb = openpyxl.load_workbook(fix_xlsx).active
+    output_xlsx = f"{user_id}_{int(time.time())}_{output_xlsx}"
 
-    og_values = ord(og_values.upper()) - 64
-    fix_values = ord(fix_values.upper()) - 64
+    df_fix = pandas.read_excel(fix_xlsx)
+    df_og = pandas.read_excel(og_xlsx)
 
-    for cell in fix_wb[fix_names]:
-        for newcell in og_wb[og_names]:
-            if cell.value is not None and cell.value == newcell.value:
-                if (
-                    og_wb.cell(newcell.row, og_values).value
-                    != fix_wb.cell(cell.row, fix_values).value
-                ):
-                    og_wb.cell(newcell.row, og_values).value = fix_wb.cell(
-                        cell.row, fix_values
-                    ).value
+    og_values = ord(og_values.upper()) - 65
+    og_names = ord(og_names.upper()) - 65
 
-    wb.save(output_xlsx)
+    while len(df_og.columns) <= max(og_names, og_values):
+        df_og[df_og.columns[og_names]] = None
+
+    fixes = dict(
+        zip(
+            df_fix.iloc[:, ord(fix_names.upper()) - 65],
+            df_fix.iloc[:, ord(fix_values.upper()) - 65],
+        )
+    )
+
+    first_chunk = True
+    chunk_size = 500
+
+    for i in range(0, len(df_og), chunk_size):
+        df_chunk = df_og.iloc[i : i + chunk_size].copy()
+
+        mask = df_chunk.iloc[:, og_names].isin(fixes)
+        df_chunk.loc[mask, df_og.columns[og_values]] = df_chunk.loc[
+            mask, df_og.columns[og_names]
+        ].map(fixes)
+
+        mode = "w" if first_chunk else "a"
+        if_exists = "overlay" if not first_chunk else None
+
+        with pandas.ExcelWriter(
+            output_xlsx, engine="openpyxl", mode=mode, if_sheet_exists=if_exists
+        ) as writer:
+            startrow = 0 if first_chunk else writer.book.active.max_row
+            df_chunk.to_excel(
+                writer, index=False, header=first_chunk, startrow=startrow
+            )
+
+        first_chunk = False
+
     os.makedirs(f"UserFiles/{str(user_id)}/FixedXLSX", exist_ok=True)
     shutil.move(output_xlsx, f"UserFiles/{str(user_id)}/FixedXLSX")
     if os.path.exists(og_xlsx):
