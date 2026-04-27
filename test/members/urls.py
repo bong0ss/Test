@@ -26,4 +26,5 @@ urlpatterns = [
     ),
     path("pf_ad_trans/", views.pf_ad_trans, name="pf_ad_trans"),
     path("xlsx_merge/", views.xlsx_merge, name="xlsx_merge"),
+    path("check_status/<str:task_id>/", views.check_status, name="check_status"),
 ]

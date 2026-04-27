@@ -122,7 +122,7 @@ def alarms_tp_uni(self, input_xlsx, output_xlsx, input_txt, user_id):
     os.makedirs(f"UserFiles/{str(user_id)}/alarmsTPuni", exist_ok=True)
     shutil.move(output_xlsx, f"UserFiles/{str(user_id)}/alarmsTPuni")
     return mark_safe(
-        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "alarmsTPuni"])}">Download</a>'
+        f'Current task has finished: <a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "alarmsTPuni"])}">Download</a>'
     )
 
 
@@ -180,7 +180,7 @@ def merge_xlsx(
     og_names = ord(og_names.upper()) - 65
 
     while len(df_og.columns) <= max(og_names, og_values):
-        df_og[df_og.columns[og_names]] = None
+        df_og[f"Column_{df_og.columns[og_names]}"] = None
 
     fixes = dict(
         zip(
@@ -220,5 +220,5 @@ def merge_xlsx(
     if os.path.exists(fix_xlsx):
         os.remove(fix_xlsx)
     return mark_safe(
-        f'<a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "FixedXLSX"])}">Download</a>'
+        f'Current task has finished: <a href="{reverse("download", args=[user_id, output_xlsx, og_output_xlsx, "FixedXLSX"])}">Download</a>'
     )

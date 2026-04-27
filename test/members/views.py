@@ -214,13 +214,14 @@ def alarms_uni(request):
                 task_id = task.id
                 cache.set(f"user_task_alarms_{request.user.id}", task_id, timeout=1800)
                 return redirect("alarms_uni")
-            else:
-                return render(request, "alarms_uni.html", context)
-        if task_id:
-            if AsyncResult(task_id).ready():
-                cache.delete(f"user_task_alarms_{request.user.id}")
-                context["button"] = AsyncResult(task_id).get()
-                return render(request, "alarms_uni.html", context)
+        else:
+            if task_id:
+                if AsyncResult(task_id).ready():
+                    cache.delete(f"user_task_alarms_{request.user.id}")
+                    context["button"] = AsyncResult(task_id).get()
+                    return render(request, "alarms_uni.html", context)
+            context["task_id"] = task_id
+            return render(request, "alarms_uni.html", context)
         return render(request, "alarms_uni.html", context)
     else:
         return render(request, "access_denied.html")
@@ -305,13 +306,18 @@ def xlsx_merge(request):
                 task_id = task.id
                 cache.set(f"user_task_merge_{request.user.id}", task_id, timeout=3600)
                 return redirect("xlsx_merge")
-            else:
-                return render(request, "xlsx_merge.html", context)
-        if task_id:
-            if AsyncResult(task_id).ready():
-                cache.delete(f"user_task_merge_{request.user.id}")
-                context["button"] = AsyncResult(task_id).get()
-                return render(request, "xlsx_merge.html", context)
+        else:
+            if task_id:
+                if AsyncResult(task_id).ready():
+                    cache.delete(f"user_task_merge_{request.user.id}")
+                    context["button"] = AsyncResult(task_id).get()
+                    return render(request, "xlsx_merge.html", context)
+            context["task_id"] = task_id
+            return render(request, "xlsx_merge.html", context)
         return render(request, "xlsx_merge.html", context)
     else:
         return render(request, "access_denied.html")
+
+
+def check_status(request, task_id):
+    return JsonResponse({"status": AsyncResult(task_id).status})

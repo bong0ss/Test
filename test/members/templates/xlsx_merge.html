@@ -29,4 +29,17 @@
 
 <p>{{ button|safe }}</p>
 
+<script>
+    const task_id = "{{ task_id }}";
+    const checkInterval = setInterval(() => {
+        fetch(`/check_status/${task_id}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'SUCCESS') {
+                clearInterval(checkInterval);
+                window.location.reload();
+            }
+        });
+    }, 2000);
+</script>
 {% endblock %}
