@@ -38,18 +38,20 @@
         <li>Parent Id: {{ task.parent_id }}</li>
         <li>Children: {{ task.children }}</li>
         <li>Worker: {{ task.worker }}</li>
+        <li>Task logs: <a href="{% url 'task_logs' task.uuid %}">Check Logs</a></li>
     </ul>
     <p><a href="{% url 'output_site' %}">Return</a></p>
 
 <script>
 const task_id = "{{ task.uuid }}"
-if (task_id)
+if (task_id && !sessionStorage.getItem('reloaded_'+task_id))
 {
     const checkInterval = setInterval(() => {
         fetch(`/check_status/${task_id}/`)
         .then(response => response.json())
         .then(data => {
         if (data.status === 'SUCCESS') {
+            sessionStorage.setItem('reloaded_'+task_id, 'true')
             clearInterval(checkInterval);
             window.location.reload();
         }

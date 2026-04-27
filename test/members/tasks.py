@@ -27,21 +27,6 @@ from .tools.proface_adress_translator import (
 from .utility import custom_data
 
 
-@shared_task
-def add(x, y, user_id=None):
-    return x + y
-
-
-@shared_task
-def sub(x, y, user_id=None):
-    return x - y
-
-
-@shared_task
-def mult(x, y, user_id=None):
-    return x * y
-
-
 @shared_task(name="members.tasks.timer", bind=True)
 def timer(self, time_left, user_id=None):
     progress = ProgressRecorder(self)
