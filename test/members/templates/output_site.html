@@ -32,4 +32,35 @@
             </tr>
         {% endfor %}
     </table>
+<ul style="display: none;">
+    {% for id in task_list %}
+        <li>{{ id }}</li>
+    {% endfor %}
+</ul>
+<script>
+    var taskIDs = [];
+    for(var id of document.querySelectorAll("li"))
+    {
+        taskIDs.push(id.textContent)
+    }
+
+    function check_status(id)
+    {
+        const checkInterval = setInterval(() => {
+            fetch(`/check_status/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'SUCCESS') {
+                    clearInterval(checkInterval);
+                    sessionStorage.setItem('reloaded_'+id, 'true');
+                    window.location.reload();
+                }
+            });
+        }, 2000);
+    }
+
+    taskIDs.forEach(id => {
+        if(id && !sessionStorage.getItem('reloaded_'+id)) check_status(id)
+    })
+</script>
 {% endblock %}

@@ -162,7 +162,14 @@ def output_site(request):
                 task_data["uuid"] = task_id
                 task_data["started"] = time.ctime(task_data["started"])
                 user_tasks.append(task_data)
-        return render(request, "output_site.html", {"tasks": user_tasks})
+        return render(
+            request,
+            "output_site.html",
+            {
+                "tasks": user_tasks,
+                "task_list": [task["uuid"] for task in user_tasks],
+            },
+        )
     else:
         return render(request, "access_denied.html")
 
